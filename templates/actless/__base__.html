@@ -1,2 +1,21 @@
-# actless
-simple &amp; fast static website generator/cms based on wig
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>{{title}}</title>
+  {% block head %}{% endblock %}
+</head>
+<body>
+  <header>
+    {% block header %}{% endblock %}
+  </header>
+  <main>
+  {% block main %}
+    {{_html|safe}}
+  {% endblock %}
+  </main>
+  <footer>
+    {% block footer %}{% endblock %}
+  </footer>
+</body>
+</html>

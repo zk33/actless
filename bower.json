@@ -1,0 +1,20 @@
+{
+  "name": "actless",
+  "main": "index.js",
+  "version": "0.0.0",
+  "homepage": "https://github.com/zk33/actless",
+  "authors": [
+    "zk33 <ymzktkak@gmail.com>"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "csswizardry-grids": "~2.2.0"
+  }
+}

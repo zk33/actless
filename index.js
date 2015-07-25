@@ -88,8 +88,12 @@ actless.initTasks = function(gulp,rootPath){
   });
 
   // wig ==========================
-  var wigOpt = options.wig;
+  var wigOpt = _.assign({},options.wig);
   wigOpt.rootDir = rootPath;
+  if(!_.isArray(wigOpt.tmplDir)){
+    wigOpt.tmplDir = [wigOpt.tmplDir];
+  }
+  wigOpt.tmplDir.push( path.join(rootPath,'templates') );
   var builder = new Wig(wigOpt);
   gulp.task('actless:wig', function(){
     try{
@@ -100,7 +104,7 @@ actless.initTasks = function(gulp,rootPath){
   });
   var wigWatchSrc = [
     path.join(rootPath,wigOpt.dataDir,'**','*'),
-    path.join(rootPath,wigOpt.tmplDir,'**','*')
+    path.join(rootPath,options.wig.tmplDir,'**','*')
   ]
   gulp.task('actless:wig:watch',function(){
     watch(wigWatchSrc, function(){
@@ -110,7 +114,6 @@ actless.initTasks = function(gulp,rootPath){
 
   // test server
   var testUrl = url.format(options.server.url);
-  console.log(testUrl);
   gulp.task('actless:server:open', function(){
     open(testUrl);
   });
