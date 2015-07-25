@@ -93,7 +93,7 @@ actless.initTasks = function(gulp,rootPath){
   if(!_.isArray(wigOpt.tmplDir)){
     wigOpt.tmplDir = [wigOpt.tmplDir];
   }
-  wigOpt.tmplDir.push( path.join(rootPath,'templates') );
+  wigOpt.tmplDir.push( path.join(__dirname,'templates') );
   var builder = new Wig(wigOpt);
   gulp.task('actless:wig', function(){
     try{
