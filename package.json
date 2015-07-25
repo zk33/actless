@@ -6,6 +6,9 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
+  "bin": {
+    "actless": "./bin/actless.js"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/zk33/actless.git"
@@ -20,5 +23,10 @@
   "bugs": {
     "url": "https://github.com/zk33/actless/issues"
   },
-  "homepage": "https://github.com/zk33/actless#readme"
+  "homepage": "https://github.com/zk33/actless#readme",
+  "dependencies": {
+    "commander": "^2.8.1",
+    "ncp": "^2.0.0",
+    "wig": "0.0.2"
+  }
 }
