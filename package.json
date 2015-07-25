@@ -26,7 +26,18 @@
   "homepage": "https://github.com/zk33/actless#readme",
   "dependencies": {
     "commander": "^2.8.1",
+    "gulp-autoprefixer": "^2.3.1",
+    "gulp-connect": "^2.2.0",
+    "gulp-plumber": "^1.0.1",
+    "gulp-sass": "^2.0.4",
+    "gulp-shell": "^0.4.2",
+    "gulp-watch": "^4.3.3",
+    "lodash": "^3.10.0",
     "ncp": "^2.0.0",
+    "open": "0.0.5",
     "wig": "0.0.2"
+  },
+  "devDependencies": {
+    "gulp": "^3.9.0"
   }
 }
