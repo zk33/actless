@@ -1,0 +1,24 @@
+{
+  "name": "actless",
+  "version": "1.0.0-beta0",
+  "description": "simple and fast static website generator/cms based on wig",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/zk33/actless.git"
+  },
+  "keywords": [
+    "wig",
+    "nunjucks",
+    "cms"
+  ],
+  "author": "Takaaki Yamazaki (zk33)",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/zk33/actless/issues"
+  },
+  "homepage": "https://github.com/zk33/actless#readme"
+}
