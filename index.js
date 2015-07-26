@@ -137,7 +137,7 @@ actless.initTasks = function(gulp,rootPath){
           path.join(rootPath,options.publicDir) + '**/*.css',
           path.join(rootPath,options.publicDir) + '**/*.js',
           path.join(rootPath,options.publicDir) + '**/*.html'
-        ],'actless:server:livereload:watch');
+        ],'actless:server:livereload');
       });
     }
   }else if(options.server.type === 'php'){
