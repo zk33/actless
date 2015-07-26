@@ -133,7 +133,7 @@ actless.initTasks = function(gulp,rootPath){
         gulp.src(path.join(rootPath,options.publicDir) + '**/*.html').pipe(connect.reload());
       });
       gulp.task('actless:server:livereload:watch', function(){
-        gulp.watch([
+        watch([
           path.join(rootPath,options.publicDir) + '**/*.css',
           path.join(rootPath,options.publicDir) + '**/*.js',
           path.join(rootPath,options.publicDir) + '**/*.html'
