@@ -95,6 +95,7 @@ actless.initTasks = function(gulp,rootPath){
   }
   wigOpt.tmplDir.push( path.join(__dirname,'templates') );
   var builder = new Wig(wigOpt);
+  builder.addRendererFilter('date', require('nunjucks-date-filter'));
   gulp.task('actless:wig', function(){
     try{
       builder.build();

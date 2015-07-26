@@ -1,7 +1,0 @@
-<!---
-title:Hello,world
---->
-
-# Hello, world
-
-こんにちは世界
