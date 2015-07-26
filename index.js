@@ -58,7 +58,7 @@ actless.options = options;
 actless.initTasks = function(gulp,rootPath){
   // compile sass (+ autoprefixer) =======
   gulp.task('actless:sass', function(){
-    var g = gulp.src( path.join(rootPath , options.sass.srcDir))
+    var g = gulp.src( path.join(rootPath , options.sass.srcDir, '**', '*'))
       .pipe(plumber())
       .pipe(sass({
         includePaths: options.sass.loadPath,
@@ -72,8 +72,11 @@ actless.initTasks = function(gulp,rootPath){
   });
 
   gulp.task('actless:sass:watch',function(){
-    watch(path.join(rootPath, options.sass.srcDir), function(){
-      gulp.start('sass');
+    watch([
+      path.join(rootPath, options.sass.srcDir) + '/**/*.scss',
+      path.join(rootPath, options.sass.srcDir) + '/**/*.sass'
+    ], function(){
+      gulp.start('actless:sass');
     });
   });
 
@@ -130,14 +133,16 @@ actless.initTasks = function(gulp,rootPath){
     });
     if(options.server.livereload){
       gulp.task('actless:server:livereload',function(){
-        gulp.src(path.join(rootPath,options.publicDir) + '**/*.html').pipe(connect.reload());
+        gulp.src(path.join(rootPath,options.publicDir,'**','*')).pipe(connect.reload());
       });
       gulp.task('actless:server:livereload:watch', function(){
         watch([
-          path.join(rootPath,options.publicDir) + '**/*.css',
-          path.join(rootPath,options.publicDir) + '**/*.js',
-          path.join(rootPath,options.publicDir) + '**/*.html'
-        ],'actless:server:livereload');
+          path.join(rootPath,options.publicDir,'**','*.css'),
+          path.join(rootPath,options.publicDir,'**','*.js'),
+          path.join(rootPath,options.publicDir,'**','*.html')
+        ],function(){
+            gulp.start('actless:server:livereload');
+        });
       });
     }
   }else if(options.server.type === 'php'){
@@ -158,7 +163,12 @@ actless.initTasks = function(gulp,rootPath){
   gulp.task('actless:compile-full',['actless:compile','icons']);
   gulp.task('actless:watch',['actless:sass:watch','actless:wig:watch']);
   gulp.task('actless:watch-full',['actless:watch','actless:icons:watch']);
-  gulp.task('actless:default',['actless:compile','actless:watch','actless:server','actless:server:open']);
+  var defaultTasks = ['actless:compile','actless:watch','actless:server','actless:server:open'];
+  if(options.server.livereload){
+    defaultTasks.push('actless:server:livereload');
+    defaultTasks.push('actless:server:livereload:watch');
+  }
+  gulp.task('actless:default', defaultTasks);
   gulp.task('default',['actless:default']);
 }
 
