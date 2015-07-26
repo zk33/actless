@@ -1,6 +1,6 @@
 {
   "name": "actless",
-  "version": "1.0.0-beta0",
+  "version": "0.1.0-beta0",
   "description": "simple and fast static website generator/cms based on wig",
   "main": "index.js",
   "scripts": {
@@ -35,7 +35,7 @@
     "lodash": "^3.10.0",
     "ncp": "^2.0.0",
     "open": "0.0.5",
-    "wig": "0.0.5"
+    "wig": "0.1.0"
   },
   "devDependencies": {
     "gulp": "^3.9.0"
