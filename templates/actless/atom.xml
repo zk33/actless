@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title>{{rssSiteTitle}}</title>
+  <link href="{{rssSiteLink}}http://example.org/"/>
+  <updated>2003-12-13T18:30:02Z</updated>
+  {%- if rssAuthors %}
+  {%- for author in rssAuthors %}
+  <author>
+    <name>{{ author.name }}</name>
+    {% if author.email %}<email>{{ author.email }}</email>{% endif %}
+    {% if author.url %}<url>{{ author.url }}</url>{% endif %}
+  </author>
+  {% endfor -%}
+  {% endif -%}
+  <id>{{rssSiteLink}}</id>
+
+
+  {%- for page in _pages %}
+  {%- if page.name != 'atom.xml' %}
+  <entry>
+    <title type="text">{{ page.params.title}}</title>
+    <link href="{{ rssBaseUrl }}{{ page._path }}"/>
+    <id>{{ rssBaseUrl }}{{ page.path }}</id>
+    {%- if page.params._updated %}
+    <updated>{{ page.params._updated | date("YYYY-MM-DDTHH:mm:ssZ") }}</updated>
+    {%- else -%}
+      {%- if page.params._created %}
+      <updated>{{ page.params._created | date("YYYY-MM-DDTHH:mm:ssZ") }}</updated>
+      {% endif -%}
+    {%- endif -%}
+    {%- if page.params._created %}
+    <published>{{ page.params._created | date("YYYY-MM-DDTHH:mm:ssZ") }}</published>
+    {% endif -%}
+    <content type="html">{{ page.params._html }}</content>
+  </entry>
+  {% endif -%}
+  {% endfor -%}
+
+</feed>
