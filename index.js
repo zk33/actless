@@ -22,6 +22,7 @@ var options ={
     loadPath:[
       __dirname + '/node_modules/actless/sass',
       __dirname + '/node_modules/bootstrap-sass/assets/stylesheets',
+      __dirname + '/node_modules/material-design-lite/src',
       __dirname + '/node_modules/sanitize.css',
       __dirname + '/bower_components/csswizardry-grids'
     ],
