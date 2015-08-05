@@ -1,6 +1,6 @@
 {
   "name": "actless",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "simple and fast static website generator/cms based on wig",
   "main": "index.js",
   "scripts": {
@@ -38,6 +38,7 @@
     "nunjucks-date-filter": "^0.1.1",
     "open": "0.0.5",
     "sanitize.css": "^1.1.0",
+    "bootstrap-sass": "^3.3.5",
     "wig": "0.1.2"
   },
   "devDependencies": {

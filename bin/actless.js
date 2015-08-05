@@ -6,7 +6,7 @@ var path = require('path');
 
 var ncp = require('ncp');
 var cli = require('commander');
-cli.version('0.1.0-beta0');
+cli.version('0.1.1');
 
 
 cli.command('init')
