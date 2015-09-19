@@ -12,6 +12,7 @@ var plumber = require('gulp-plumber');
 var watch = require('gulp-watch');
 var shell = require('gulp-shell');
 var connect = require('gulp-connect');
+var prettify = require('gulp-prettify');
 
 var options ={
   publicDir:'public',
@@ -48,6 +49,13 @@ var options ={
       protocol:'http',
       hostname:'localhost',
       port:3000
+    }
+  },
+  prettify:{
+    enabled: false,
+    tmpDir: 'tmp_html',
+    options:{
+      indent_size: 2,
     }
   }
 }
@@ -98,6 +106,10 @@ actless.initTasks = function(gulp,rootPath){
     wigOpt.tmplDir = [wigOpt.tmplDir];
   }
   wigOpt.tmplDir.push( path.join(__dirname,'templates') );
+  // change output directory if prettify is enabeld
+  if(options.prettify && options.prettify.enabled){
+    wigOpt.outDir = options.prettify.tmpDir || 'html_tmp';
+  }
   var builder = new Wig(wigOpt);
   builder.addRendererFilter('date', require('nunjucks-date-filter'));
   gulp.task('actless:wig', function(){
@@ -115,6 +127,22 @@ actless.initTasks = function(gulp,rootPath){
     watch(wigWatchSrc, function(){
       gulp.start('actless:wig');
     });
+  });
+
+  // prettify =====================
+  var prettifySrc = []
+  if(options.prettify.enabled){
+    prettifySrc.push(path.join(rootPath,options.prettify.tmpDir,'**','*.html'))
+  }
+  gulp.task('actless:prettify', function(){
+    gulp.src(prettifySrc)
+      .pipe(prettify(options.prettify.options))
+      .pipe(gulp.dest(options.publicDir));
+  });
+  gulp.task('actless:prettify:watch',function(){
+    watch(prettifySrc, function(){
+      gulp.start('actless:prettify');
+    })
   });
 
   // test server
@@ -160,9 +188,9 @@ actless.initTasks = function(gulp,rootPath){
   }
 
 
-  gulp.task('actless:compile',['actless:sass','actless:wig']);
+  gulp.task('actless:compile',['actless:sass','actless:wig','actless:prettify']);
   gulp.task('actless:compile-full',['actless:compile','icons']);
-  gulp.task('actless:watch',['actless:sass:watch','actless:wig:watch']);
+  gulp.task('actless:watch',['actless:sass:watch','actless:wig:watch','actless:prettify:watch']);
   gulp.task('actless:watch-full',['actless:watch','actless:icons:watch']);
   var defaultTasks = ['actless:compile','actless:watch','actless:server','actless:server:open'];
   if(options.server.livereload){
