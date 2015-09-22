@@ -13,6 +13,7 @@ var watch = require('gulp-watch');
 var shell = require('gulp-shell');
 var connect = require('gulp-connect');
 var prettify = require('gulp-prettify');
+var rename = require('gulp-rename');
 
 var options ={
   publicDir:'public',
@@ -32,7 +33,13 @@ var options ={
     }
   },
   icon:{
-    srcDir: 'assets/icons'
+    srcDir: 'assets/icons',
+    useTmp: false,
+    tmpDir: 'assets/icons_tmp',
+    renameTmpFile:{
+      from:'iconsのコピー_',
+      to:''
+    }
   },
   wig:{
     outDir:'public',
@@ -89,14 +96,34 @@ actless.initTasks = function(gulp,rootPath){
     });
   });
 
-  // compile icons with fontcustom
+  // compile icons with fontcustom ====================
+
   gulp.task('actless:icons', shell.task([
     'fontcustom compile'
   ]));
+  gulp.task('actless:icons:tmp',function(){
+    if(!options.icon.useTmp){
+      return;
+    }
+    gulp.src(path.join(rootPath,options.icon.tmpDir,'**','*.svg'))
+      .pipe(rename(function(p){
+        p.basename = p.basename.replace(
+          options.icon.renameTmpFile.from,
+          options.icon.renameTmpFile.to
+        );
+      }))
+      .pipe(gulp.dest(path.join(rootPath,options.icon.srcDir)));
+  });
+
   gulp.task('actless:icons:watch',function(){
-    watch(path.join(rootPath,options.icons.srcDir), function(){
+    watch(path.join(rootPath,options.icon.srcDir,'**','*.svg'), function(){
       gulp.start('actless:icons');
     });
+    if(options.icon.useTmp){
+      watch(path.join(rootPath,options.icon.tmpDir,'**','*.svg'),function(){
+        gulp.start('actless:icons:tmp');
+      })
+    }
   });
 
   // wig ==========================
@@ -189,16 +216,21 @@ actless.initTasks = function(gulp,rootPath){
 
 
   gulp.task('actless:compile',['actless:sass','actless:wig','actless:prettify']);
-  gulp.task('actless:compile-full',['actless:compile','icons']);
+  gulp.task('actless:compile-full',['actless:compile','actless:icons:tmp', 'actless:icons']);
   gulp.task('actless:watch',['actless:sass:watch','actless:wig:watch','actless:prettify:watch']);
   gulp.task('actless:watch-full',['actless:watch','actless:icons:watch']);
   var defaultTasks = ['actless:compile','actless:watch','actless:server','actless:server:open'];
+  var fullTasks = ['actless:compile-full','actless:watch-full','actless:server','actless:server:open'];
   if(options.server.livereload){
     defaultTasks.push('actless:server:livereload');
     defaultTasks.push('actless:server:livereload:watch');
+    fullTasks.push('actless:server:livereload');
+    fullTasks.push('actless:server:livereload:watch');
   }
   gulp.task('actless:default', defaultTasks);
+  gulp.task('actless:full', fullTasks);
   gulp.task('default',['actless:default']);
+  gulp.task('full',['actless:full']);
 }
 
 module.exports = actless;
