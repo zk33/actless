@@ -26,7 +26,8 @@ var options ={
       __dirname + '/node_modules/bootstrap-sass/assets/stylesheets',
       __dirname + '/node_modules/material-design-lite/src',
       __dirname + '/node_modules/sanitize.css',
-      __dirname + '/bower_components/csswizardry-grids'
+      __dirname + '/bower_components/csswizardry-grids',
+      __dirname + '/node_modules/wig/node_modules/' // for highlight.js ※なおしたい
     ],
     prefixer:{
       browsers:['last 2 versions','> 4%']
