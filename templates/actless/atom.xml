@@ -3,7 +3,9 @@
 
   <title>{{rssSiteTitle}}</title>
   <link href="{{rssSiteLink}}http://example.org/"/>
-  <updated>2003-12-13T18:30:02Z</updated>
+  {%- if _pages[0] %}
+  <updated>{{_pages[0].params._updated | date("YYYY-MM-DDTHH:mm:ssZ") }}</updated>
+  {% endif -%}
   {%- if rssAuthors %}
   {%- for author in rssAuthors %}
   <author>

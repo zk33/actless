@@ -158,18 +158,27 @@ actless.initTasks = function(gulp,rootPath){
   });
 
   // prettify =====================
-  var prettifySrc = []
+  var prettifySrc = [];
+  var nonPrettifySrc = [];
   if(options.prettify.enabled){
-    prettifySrc.push(path.join(rootPath,options.prettify.tmpDir,'**','*.html'))
+    prettifySrc.push(path.join(rootPath,options.prettify.tmpDir,'**','*.html'));
+    nonPrettifySrc.push(path.join(rootPath,options.prettify.tmpDir,'**','*'));
+    nonPrettifySrc.push('!' + path.join(rootPath,options.prettify.tmpDir,'**','*.html'));
   }
   gulp.task('actless:prettify', function(){
     gulp.src(prettifySrc)
       .pipe(prettify(options.prettify.options))
       .pipe(gulp.dest(options.publicDir));
   });
+  gulp.task('actless:nonPrettify', function(){
+    gulp.src(nonPrettifySrc).pipe(gulp.dest(options.publicDir));
+  });
   gulp.task('actless:prettify:watch',function(){
     watch(prettifySrc, function(){
       gulp.start('actless:prettify');
+    })
+    watch(nonPrettifySrc, function(){
+      gulp.start('actless:nonPrettify');
     })
   });
 
@@ -216,7 +225,7 @@ actless.initTasks = function(gulp,rootPath){
   }
 
 
-  gulp.task('actless:compile',['actless:sass','actless:wig','actless:prettify']);
+  gulp.task('actless:compile',['actless:sass','actless:wig','actless:prettify','actless:nonPrettify']);
   gulp.task('actless:compile-full',['actless:compile','actless:icons:tmp', 'actless:icons']);
   gulp.task('actless:watch',['actless:sass:watch','actless:wig:watch','actless:prettify:watch']);
   gulp.task('actless:watch-full',['actless:watch','actless:icons:watch']);
