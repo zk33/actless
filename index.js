@@ -177,11 +177,23 @@ actless.initTasks = function(gulp,rootPath){
     gulp.src(nonPrettifySrc).pipe(gulp.dest(options.publicDir));
   });
   gulp.task('actless:prettify:watch',function(){
+    var prettifyTimeoutId = null;
+    var nonprettifyTimeoutId = null;
     watch(prettifySrc, function(){
-      gulp.start('actless:prettify');
+      if(prettifyTimeoutId){
+        cleartTimeout(prettifyTimeoutId);
+      }
+      prettifyTimeoutId = setTimeout(function(){
+        gulp.start('actless:prettify');
+      },500);
     })
     watch(nonPrettifySrc, function(){
-      gulp.start('actless:nonPrettify');
+      if(nonprettifyTimeoutId){
+        cleartTimeout(nonprettifyTimeoutId);
+      }
+      nonprettifyTimeoutId = setTimeout(function(){
+        gulp.start('actless:nonPrettify');
+      },500);
     })
   });
 
