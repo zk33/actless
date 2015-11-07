@@ -91,7 +91,8 @@ actless.initTasks = function(gulp,rootPath){
   gulp.task('actless:sass:watch',function(){
     watch([
       path.join(rootPath, options.sass.srcDir) + '/**/*.scss',
-      path.join(rootPath, options.sass.srcDir) + '/**/*.sass'
+      path.join(rootPath, options.sass.srcDir) + '/**/*.sass',
+      '!' + path.join(rootPath, options.sass.srcDir) + '/**/*.swp'
     ], function(){
       gulp.start('actless:sass');
     });
@@ -149,7 +150,9 @@ actless.initTasks = function(gulp,rootPath){
   });
   var wigWatchSrc = [
     path.join(rootPath,wigOpt.dataDir,'**','*'),
-    path.join(rootPath,options.wig.tmplDir,'**','*')
+    path.join(rootPath,options.wig.tmplDir,'**','*'),
+    '!' + path.join(rootPath,wigOpt.dataDir,'**','*.swp'),
+    '!' + path.join(rootPath,options.wig.tmplDir,'**','*.swp')
   ]
   gulp.task('actless:wig:watch',function(){
     watch(wigWatchSrc, function(){
@@ -202,12 +205,20 @@ actless.initTasks = function(gulp,rootPath){
         gulp.src(path.join(rootPath,options.publicDir,'**','*')).pipe(connect.reload());
       });
       gulp.task('actless:server:livereload:watch', function(){
+        var timeoutId = null;
         watch([
           path.join(rootPath,options.publicDir,'**','*.css'),
           path.join(rootPath,options.publicDir,'**','*.js'),
           path.join(rootPath,options.publicDir,'**','*.html')
         ],function(){
-            gulp.start('actless:server:livereload');
+            console.log(timeoutId);
+            if(timeoutId){
+              clearTimeout(timeoutId);
+              timeoutId = null;
+            }
+            timeoutId = setTimeout(function(){
+              gulp.start('actless:server:livereload');
+            },200);
         });
       });
     }
