@@ -181,7 +181,7 @@ actless.initTasks = function(gulp,rootPath){
     var nonprettifyTimeoutId = null;
     watch(prettifySrc, function(){
       if(prettifyTimeoutId){
-        cleartTimeout(prettifyTimeoutId);
+        clearTimeout(prettifyTimeoutId);
       }
       prettifyTimeoutId = setTimeout(function(){
         gulp.start('actless:prettify');
@@ -189,7 +189,7 @@ actless.initTasks = function(gulp,rootPath){
     })
     watch(nonPrettifySrc, function(){
       if(nonprettifyTimeoutId){
-        cleartTimeout(nonprettifyTimeoutId);
+        clearTimeout(nonprettifyTimeoutId);
       }
       nonprettifyTimeoutId = setTimeout(function(){
         gulp.start('actless:nonPrettify');
