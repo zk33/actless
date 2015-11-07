@@ -211,14 +211,13 @@ actless.initTasks = function(gulp,rootPath){
           path.join(rootPath,options.publicDir,'**','*.js'),
           path.join(rootPath,options.publicDir,'**','*.html')
         ],function(){
-            console.log(timeoutId);
             if(timeoutId){
               clearTimeout(timeoutId);
               timeoutId = null;
             }
             timeoutId = setTimeout(function(){
               gulp.start('actless:server:livereload');
-            },200);
+            },500);
         });
       });
     }
