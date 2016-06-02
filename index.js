@@ -214,7 +214,7 @@ actless.initTasks = function(gulp,rootPath){
     });
     if(options.server.livereload){
       gulp.task('actless:server:livereload',function(){
-        gulp.src(path.join(rootPath,options.publicDir,'**','*')).pipe(connect.reload());
+        gulp.src(path.join(rootPath,options.publicDir,'**','*.*')).pipe(connect.reload());
       });
       gulp.task('actless:server:livereload:watch', function(){
         var timeoutId = null;
