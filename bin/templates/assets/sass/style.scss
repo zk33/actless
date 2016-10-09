@@ -9,20 +9,12 @@
 //@import 'sanitize';
 
 // =======================================================
-// styles for highlight.js ( for Markdown Syntax hilight )
-// you can change color schema
-// demo: https://highlightjs.org/static/demo/
-// files: https://github.com/isagalaev/highlight.js/tree/master/src/styles
-
-// @import 'highlight.js/styles/default';
-
-// =======================================================
 // bootstrap-sass
 // https://github.com/twbs/bootstrap-sass
 
 // customize:
 // hit command on project root directory:
-// cp ./node_modules/actless/node_modules/bootstrap-sass/assets/stylesheets/bootstrap/_variables.scss ./assets/sass/_bootstrap_vars.scss
+// cp ./node_modules/bootstrap-sass/assets/stylesheets/bootstrap/_variables.scss ./assets/sass/_bootstrap_vars.scss
 // and comment out below line
 //@import './bootstrap_vars';
 
@@ -34,7 +26,7 @@
 
 // customize:
 // hit command on project root directory:
-// cp ./node_modules/actless/node_modules/material-design-lite/src/_variables.scss ./assets/sass/_mdl_vars.scss
+// cp ./node_modules/material-design-lite/src/_variables.scss ./assets/sass/_mdl_vars.scss
 // and comment out below line
 //@import './mdl_vars';
 
@@ -42,6 +34,14 @@
 
 //@import 'material-design-lite-grid'; // *grid only
 
+//=======================================================
+// actless
+//=======================================================
+// if you build icon font with actless, uncomment below lines.
+//
+// @import './_iconhash.scss';
+// @import './_icons.scss';
+//
 
 // =======================================================
 // AND write your awesome CSS!

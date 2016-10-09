@@ -29,12 +29,10 @@ var options = {
     destDir: 'public/assets/css',
     style: 'compact',
     loadPath: [
-      __dirname + '/node_modules/actless/sass',
-      __dirname + '/node_modules/bootstrap-sass/assets/stylesheets',
-      __dirname + '/node_modules/material-design-lite/src',
-      __dirname + '/node_modules/sanitize.css',
-      __dirname + '/bower_components/csswizardry-grids',
-      __dirname + '/node_modules/wig/node_modules/' // for highlight.js ※なおしたい
+      './node_modules/actless/sass',
+      './node_modules/bootstrap-sass/assets/stylesheets',
+      './node_modules/material-design-lite/src',
+      './node_modules/sanitize.css'
     ],
     prefixer: {
       browsers: ['last 2 versions', '> 4%']
