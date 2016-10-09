@@ -1,0 +1,44 @@
+
+// NOTE: /assets/sass/_icon.scssはgulpで自動生成しているので、主導での編集はしないでください
+
+
+@font-face {
+	font-family: "{{ fontName }}";
+	src: url('{{ fontPath }}{{ fontName }}.eot#{$iconhash}');
+	src: url('{{ fontPath }}{{ fontName }}.eot#{$iconhash}#iefix') format('eot'),
+		url('{{ fontPath }}{{ fontName }}.woff#{$iconhash}') format('woff'),
+		url('{{ fontPath }}{{ fontName }}.ttf#{$iconhash}') format('truetype'),
+		url('{{ fontPath }}{{ fontName }}.svg#{$iconhash}#{{ fontName }}') format('svg');
+}
+
+.{{ className }} {
+  display: inline-block;
+  font: normal normal normal 14px/1 {{ fontName }};
+  font-size: inherit;
+  text-rendering: auto;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale
+}
+
+.{{ className }}-spin {
+  animation: {{ className }}-spin 2s infinite linear
+}
+
+.{{ className }}-pulse {
+  animation: {{ className }}-spin 1s infinite steps(8)
+}
+
+@keyframes {{ className }}-spin {
+    0% {
+        -webkit-transform: rotate(0deg);
+        transform: rotate(0deg)
+    }
+    100% {
+        -webkit-transform: rotate(359deg);
+        transform: rotate(359deg)
+    }
+}
+
+{% for glyph in glyphs %}
+.{{ className }}-{{ glyph.name }}:before{ content:"\{{ glyph.codepoint }}"}
+{% endfor %}
