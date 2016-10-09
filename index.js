@@ -263,6 +263,8 @@ actless.initTasks = function(gulp,rootPath){
   gulp.task('actless:full', fullTasks);
   gulp.task('default',['actless:default']);
   gulp.task('full',['actless:full']);
+
+  return gulp;
 }
 
 module.exports = actless;
