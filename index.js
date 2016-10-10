@@ -49,7 +49,7 @@ var options = {
   js: {
     srcDir: 'assets/js',
     entry: 'assets/js/*.js',
-    watch: 'assets/js/**/*.js',
+    watch: ['assets/js/**/*.js','assets/js/**/*.jsx'],
     destDir: 'public/assets/js',
     commonFileName: 'common.js',
     babelPresets:['es2015', "react"],
