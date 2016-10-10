@@ -12,6 +12,14 @@ var sass = require('gulp-sass');
 var prefix = require('gulp-autoprefixer');
 var plumber = require('gulp-plumber');
 var watch = require('gulp-watch');
+var browserify = require('browserify');
+var babelify = require('babelify');
+var factor = require('factor-bundle');
+var source = require('vinyl-source-stream');
+var file = require('gulp-file');
+var concat = require('concat-stream');
+var glob = require('glob');
+var uglify = require('gulp-uglify');
 var shell = require('gulp-shell');
 var connect = require('gulp-connect');
 var prettify = require('gulp-prettify');
@@ -38,6 +46,15 @@ var options = {
       browsers: ['last 2 versions', '> 4%']
     }
   },
+  js: {
+    srcDir: 'assets/js',
+    entry: 'assets/js/*.js',
+    watch: 'assets/js/**/*.js',
+    destDir: 'public/assets/js',
+    commonFileName: 'common.js',
+    babelPresets:['es2015', "react"],
+    exclude:[]
+  },
   icon: {
     srcDir: 'assets/icons/',
     distDir: 'public/assets/fonts/',
@@ -48,9 +65,9 @@ var options = {
     minifiedDir: 'assets/icons_min/',
     fontName: 'icons',
     iconSassName: '_icons',
-    sassTemplate:__dirname + '/lib/templates/_icon.scss',
-    sassHashTemplate:__dirname + '/lib/templates/_iconhash.scss',
-    sassFontPath:'../fonts/',
+    sassTemplate: __dirname + '/lib/templates/_icon.scss',
+    sassHashTemplate: __dirname + '/lib/templates/_iconhash.scss',
+    sassFontPath: '../fonts/',
     className: 'icon',
   },
   wig: {
@@ -59,7 +76,6 @@ var options = {
     tmplDir: 'templates',
     verbose: true
   },
-  js: {},
   server: {
     type: 'node',
     livereload: true,
@@ -83,6 +99,7 @@ var actless = {};
 actless.options = options;
 
 actless.initTasks = function(gulp, rootPath) {
+
   // compile sass (+ autoprefixer) =======
   gulp.task('actless:sass', function() {
     var g = gulp.src(path.join(rootPath, options.sass.srcDir, '**', '*'))
@@ -108,13 +125,64 @@ actless.initTasks = function(gulp, rootPath) {
     });
   });
 
+  /*
+    build JS ========================================================
+    ref：http://qiita.com/inuscript/items/b933af4d44a4712cb8f8
+  */
+  gulp.task('actless:js', () => {
+    var write = ((filepath) => {
+      return concat((content) => {
+        return file(path.basename(filepath), content, {
+            src: true
+          })
+          .pipe(uglify())
+          .pipe(gulp.dest(path.join(rootPath,options.js.destDir)))
+      });
+    });
+    var files = glob.sync(path.join(rootPath,options.js.entry), {
+      nodir: true
+    });
+    var outputFiles = files.map((fileName) => {
+      return write(fileName.replace(options.js.srcDir, options.js.destDir));
+    });
+
+    var b = browserify(files, {
+        extensions: ['js', 'jsx'],
+        debug: true,
+    })
+    for(var i=0,len=options.js.exclude.length; i<len; i++){
+      b = b.exclude(options.js.exclude[i]);
+    }
+    b = b.transform(babelify.configure({
+        presets: options.js.babelPresets
+      }))
+      .plugin(factor, {
+        output: outputFiles
+      })
+      .bundle()
+      .on('error', (err) => {
+        console.warn('Error : ' + err.message + '\n' + err.stack)
+        this.emit('end');
+      })
+      .pipe(write(options.js.commonFileName))
+      .on('error', (err) => {
+        console.warn('Error : ' + err.message + '\n' + err.stack)
+      })
+    return b;
+  });
+
+  gulp.task('actless:js:watch', ['actless:js'], () => {
+    gulp.watch(options.js.watch, ['actless:js']);
+  });
+
+
   // bulid icon font ===========================================
 
   gulp.task('actless:icons:svgmin', () => {
     return gulp.src(path.join(rootPath, options.icon.srcDir, '**', '*.svg'))
       .pipe(foreach((stream, file) => {
         var filename = file.path.replace(file.base, '');
-        filename = filename.replace(options.icon.renameSrcFile.from,options.icon.renameSrcFile.to);
+        filename = filename.replace(options.icon.renameSrcFile.from, options.icon.renameSrcFile.to);
         return stream.pipe(svgmin())
           .pipe(gulpconcat(filename))
       }))
@@ -147,14 +215,14 @@ actless.initTasks = function(gulp, rootPath) {
           .pipe(gulpconcat(options.icon.iconSassName + '.scss'))
           .pipe(gulp.dest(path.join(rootPath, sassDir)));
       })
-      .pipe(gulp.dest(path.join(rootPath,options.icon.distDir)));
+      .pipe(gulp.dest(path.join(rootPath, options.icon.distDir)));
   });
 
   gulp.task('actless:icons:hash', function() {
     var data;
-    try{
-      data = fs.readFileSync(path.join(rootPath,options.icon.distDir,options.icon.fontName + '.woff'));
-    }catch(e){
+    try {
+      data = fs.readFileSync(path.join(rootPath, options.icon.distDir, options.icon.fontName + '.woff'));
+    } catch (e) {
       console.log(e);
       return;
     }
@@ -172,7 +240,7 @@ actless.initTasks = function(gulp, rootPath) {
   gulp.task('actless:icons:watch', ['actless:icons:svgmin', 'actless:icons:compile', 'actless:icons:hash'], function() {
     gulp.watch(path.join(rootPath, options.icon.srcDir, '**', '*.svg'), ['actless:icons:svgmin']);
     gulp.watch(path.join(rootPath, options.icon.minifiedDir, '**', '*.svg'), ['actless:icons:compile']);
-    gulp.watch(path.join(rootPath,options.icon.distDir,options.icon.fontName + '.woff'), ['actless:icons:hash']);
+    gulp.watch(path.join(rootPath, options.icon.distDir, options.icon.fontName + '.woff'), ['actless:icons:hash']);
   });
 
   // wig ==========================
@@ -294,9 +362,9 @@ actless.initTasks = function(gulp, rootPath) {
   }
 
 
-  gulp.task('actless:compile', ['actless:sass', 'actless:wig', 'actless:prettify', 'actless:nonPrettify']);
+  gulp.task('actless:compile', ['actless:sass', 'actless:js', 'actless:wig', 'actless:prettify', 'actless:nonPrettify']);
   gulp.task('actless:compile-full', ['actless:compile', 'actless:icons:svgmin', 'actless:icons:compile', 'actless:icons:hash']);
-  gulp.task('actless:watch', ['actless:sass:watch', 'actless:wig:watch', 'actless:prettify:watch']);
+  gulp.task('actless:watch', ['actless:sass:watch', 'actless:js:watch', 'actless:wig:watch', 'actless:prettify:watch']);
   gulp.task('actless:watch-full', ['actless:watch', 'actless:icons:watch']);
   var defaultTasks = ['actless:compile', 'actless:watch', 'actless:server', 'actless:server:open'];
   var fullTasks = ['actless:compile-full', 'actless:watch-full', 'actless:server', 'actless:server:open'];
