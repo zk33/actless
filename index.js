@@ -160,12 +160,14 @@ actless.initTasks = function(gulp, rootPath) {
         output: outputFiles
       })
       .bundle()
-      .on('error', (err) => {
-        console.warn('Error : ' + err.message + '\n' + err.stack)
+      .on('error', function(err){
+        console.warn('Error : ' + err.message + '\n' + err.stack);
+        this.emit('end');// for prevent stop 'watch'
       })
       .pipe(write(options.js.commonFileName))
-      .on('error', (err) => {
-        console.warn('Error : ' + err.message + '\n' + err.stack)
+      .on('error', function(err){
+        console.warn('Error : ' + err.message + '\n' + err.stack);
+        this.emit('end');
       })
     return b;
   });
