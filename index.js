@@ -29,6 +29,7 @@ var foreach = require('gulp-foreach');
 var gulpconcat = require('gulp-concat');
 var consolidate = require('gulp-consolidate');
 var iconfont = require('gulp-iconfont');
+var walkSync = require('walk-sync');
 
 var options = {
   publicDir: 'public',
@@ -49,11 +50,11 @@ var options = {
   js: {
     srcDir: 'assets/js',
     entry: 'assets/js/*.js',
-    watch: ['assets/js/**/*.js','assets/js/**/*.jsx'],
+    watch: ['assets/js/**/*.js', 'assets/js/**/*.jsx'],
     destDir: 'public/assets/js',
     commonFileName: 'common.js',
-    babelPresets:['es2015', "react"],
-    exclude:[]
+    babelPresets: ['es2015', "react"],
+    exclude: []
   },
   icon: {
     srcDir: 'assets/icons/',
@@ -91,6 +92,10 @@ var options = {
     options: {
       indent_size: 2,
     }
+  },
+  assetHash: {
+    enabled: true,
+    extraAssetDir: []
   }
 }
 
@@ -136,10 +141,10 @@ actless.initTasks = function(gulp, rootPath) {
             src: true
           })
           .pipe(uglify())
-          .pipe(gulp.dest(path.join(rootPath,options.js.destDir)))
+          .pipe(gulp.dest(path.join(rootPath, options.js.destDir)))
       });
     });
-    var files = glob.sync(path.join(rootPath,options.js.entry), {
+    var files = glob.sync(path.join(rootPath, options.js.entry), {
       nodir: true
     });
     var outputFiles = files.map((fileName) => {
@@ -147,10 +152,10 @@ actless.initTasks = function(gulp, rootPath) {
     });
 
     var b = browserify(files, {
-        extensions: ['js', 'jsx'],
-        debug: true,
+      extensions: ['js', 'jsx'],
+      debug: true,
     })
-    for(var i=0,len=options.js.exclude.length; i<len; i++){
+    for (var i = 0, len = options.js.exclude.length; i < len; i++) {
       b = b.exclude(options.js.exclude[i]);
     }
     b = b.transform(babelify.configure({
@@ -160,12 +165,12 @@ actless.initTasks = function(gulp, rootPath) {
         output: outputFiles
       })
       .bundle()
-      .on('error', function(err){
+      .on('error', function(err) {
         console.warn('Error : ' + err.message + '\n' + err.stack);
-        this.emit('end');// for prevent stop 'watch'
+        this.emit('end'); // for prevent stop 'watch'
       })
       .pipe(write(options.js.commonFileName))
-      .on('error', function(err){
+      .on('error', function(err) {
         console.warn('Error : ' + err.message + '\n' + err.stack);
         this.emit('end');
       })
@@ -362,10 +367,47 @@ actless.initTasks = function(gulp, rootPath) {
     var cmd = 'dev_appserver.py --port=' + options.server.url.port + ' ' + path.join(rootPath, options.publicDir);
   }
 
+  // generate asset file hash(JS/CSS) ============================
+  /* calc checksum ======================================= */
 
-  gulp.task('actless:compile', ['actless:sass', 'actless:js', 'actless:wig', 'actless:prettify', 'actless:nonPrettify']);
+  var assetHashSrc = [
+    path.join(rootPath, options.sass.destDir),
+    path.join(rootPath, options.js.destDir)
+  ];
+  Array.prototype.push.apply(assetHashSrc, options.assetHash.extraAssetDir.map((v) => {
+    return path.join(rootPath, v);
+  }));
+  gulp.task('actless:assetHash', () => {
+    if (options.assetHash.enabled) {
+      var res = {};
+      var dir, files, fName, data, hash;
+      for (var i = 0, len = assetHashSrc.length; i < len; i++) {
+        dir = assetHashSrc[i];
+        files = walkSync(dir, {
+          directories: false
+        });
+        for (var k = 0, kLen = files.length; k < kLen; k++) {
+          fName = files[k];
+          if (fName.charAt(0) !== '.') {
+            data = fs.readFileSync(path.join(dir, fName));
+            hash = crypto.createHash('md5');
+            hash.update(data.toString(), 'utf8');
+            res[fName] = hash.digest('hex');
+          }
+        }
+      }
+      fs.writeFileSync(path.join(options.wig.dataDir, '_assetHash.json'), JSON.stringify(res, null, 2));
+    }
+  });
+  gulp.task('actless:assetHash:watch', function() {
+    gulp.watch(assetHashSrc, ['actless:assetHash']);
+  });
+
+
+
+  gulp.task('actless:compile', ['actless:sass', 'actless:js', 'actless:assetHash', 'actless:wig', 'actless:prettify', 'actless:nonPrettify']);
   gulp.task('actless:compile-full', ['actless:compile', 'actless:icons:svgmin', 'actless:icons:compile', 'actless:icons:hash']);
-  gulp.task('actless:watch', ['actless:sass:watch', 'actless:js:watch', 'actless:wig:watch', 'actless:prettify:watch']);
+  gulp.task('actless:watch', ['actless:sass:watch', 'actless:js:watch', 'actless:assetHash:watch', 'actless:wig:watch', 'actless:prettify:watch']);
   gulp.task('actless:watch-full', ['actless:watch', 'actless:icons:watch']);
   var defaultTasks = ['actless:compile', 'actless:watch', 'actless:server', 'actless:server:open'];
   var fullTasks = ['actless:compile-full', 'actless:watch-full', 'actless:server', 'actless:server:open'];
