@@ -80,6 +80,7 @@ var options = {
   server: {
     type: 'node',
     livereload: true,
+    gaeAppRoot: 'app', // for app engine only
     url: {
       protocol: 'http',
       hostname: 'localhost',
@@ -364,7 +365,7 @@ actless.initTasks = function(gulp, rootPath) {
     gulp.task('server_py', shell.task([cmd]));
   } else if (options.server.type === 'gae') {
     // test server(GAE)
-    var cmd = 'dev_appserver.py --port=' + options.server.url.port + ' ' + path.join(rootPath, options.publicDir);
+    var cmd = 'dev_appserver.py --port=' + options.server.url.port + ' ' + path.join(rootPath, options.server.gaeAppRoot);
   }
 
   // generate asset file hash(JS/CSS) ============================
