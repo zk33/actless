@@ -362,10 +362,11 @@ actless.initTasks = function(gulp, rootPath) {
   } else if (options.server.type === 'python') {
     // test server(Python)
     var cmd = 'pushd ' + path.join(rootPath, options.publicDir) + '; python -m SimpleHTTPServer ' + optiions.server.url.port + '; popd'
-    gulp.task('server_py', shell.task([cmd]));
+    gulp.task('actless:server', shell.task([cmd]));
   } else if (options.server.type === 'gae') {
     // test server(GAE)
     var cmd = 'dev_appserver.py --port=' + options.server.url.port + ' ' + path.join(rootPath, options.server.gaeAppRoot);
+    gulp.task('actless:server', shell.task([cmd]));
   }
 
   // generate asset file hash(JS/CSS) ============================
