@@ -59,6 +59,7 @@ var options = {
   icon: {
     srcDir: 'assets/icons/',
     distDir: 'public/assets/fonts/',
+    sassDir: '',
     renameSrcFile: {
       from: 'iconsのコピー_',
       to: ''
@@ -96,6 +97,7 @@ var options = {
   },
   assetHash: {
     enabled: true,
+    destDir: '',
     extraAssetDir: []
   }
 }
@@ -376,6 +378,7 @@ actless.initTasks = function(gulp, rootPath) {
     path.join(rootPath, options.sass.destDir),
     path.join(rootPath, options.js.destDir)
   ];
+  var assetHashDestDir = options.assetHash.destDir ? options.assetHash.destDir : options.wig.dataDir;
   Array.prototype.push.apply(assetHashSrc, options.assetHash.extraAssetDir.map((v) => {
     return path.join(rootPath, v);
   }));
@@ -398,10 +401,10 @@ actless.initTasks = function(gulp, rootPath) {
           }
         }
       }
-      fs.writeFileSync(path.join(options.wig.dataDir, '_assetHash.json'), JSON.stringify(res, null, 2));
+      fs.writeFileSync(path.join(assetHashDestDir, '_assetHash.json'), JSON.stringify(res, null, 2));
     }
   });
-  gulp.task('actless:assetHash:watch', function() {
+  gulp.task('actless:assetHash:watch', ['actless:assetHash'], function() {
     gulp.watch(assetHashSrc, ['actless:assetHash']);
   });
 
