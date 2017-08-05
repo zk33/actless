@@ -9,7 +9,7 @@ var _ = require('lodash');
 var Wig = require('wig');
 var open = require('open');
 var sass = require('gulp-sass');
-var prefix = require('gulp-autoprefixer');
+var postcss = require('gulp-postcss');
 var plumber = require('gulp-plumber');
 var watch = require('gulp-watch');
 var browserify = require('browserify');
@@ -44,7 +44,21 @@ var options = {
       './node_modules/sanitize.css'
     ],
     prefixer: {
-      browsers: ['last 2 versions', '> 4%']
+      enabled: true,
+      browsers: ['last 2 versions', '> 4%'],
+      options:{}
+    },
+    cssnext: {
+      enabled:false,
+      options:{}
+    },
+    mqpacker: {
+      enabled:false,
+      options:{}
+    },
+    cssnano: {
+      enabled:false,
+      options:{}
     }
   },
   js: {
@@ -116,8 +130,24 @@ actless.initTasks = function(gulp, rootPath) {
         includePaths: options.sass.loadPath,
         outputStyle: options.sass.style
       }).on('error', sass.logError))
-    if (options.sass.prefixer) {
-      g = g.pipe(prefix(options.sass.prefixer));
+
+    //postcss
+    var processors = [];
+    if (options.sass.cssnext.enabled) {
+      processors.push(require('postcss-cssnext')(options.sass.cssnext.options));
+    }else if(options.sass.prefixer){
+      processors.push(require('autoprefixer')(Object.assign({browsers:options.sass.prefixer.browsers},options.sass.prefixer.options)));
+    }
+    if(options.sass.mqpacker.enabled){
+      processors.push(require('css-mqpacker')(options.sass.mqpacker.options));
+    }
+    if(options.sass.cssnano.enabled){
+      processors.push(require('cssnano')(options.sass.cssnano.options));
+
+    }
+
+    if(processors.length){
+      g = g.pipe(postcss(processors));
     }
     g = g.pipe(plumber.stop())
       .pipe(gulp.dest(path.join(rootPath, options.sass.destDir)))
