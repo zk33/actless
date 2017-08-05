@@ -9,5 +9,6 @@ opt.sass.cssnano.enabled = true;
 opt.wig.tmplDir = 'tmpl';
 opt.prettify.enabled = true;
 opt.icon.useTmp = true;
+opt.icon.options.normalize = true;
 
 actless.initTasks(gulp, __dirname)

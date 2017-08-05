@@ -46,19 +46,19 @@ var options = {
     prefixer: {
       enabled: true,
       browsers: ['last 2 versions', '> 4%'],
-      options:{}
+      options: {}
     },
     cssnext: {
-      enabled:false,
-      options:{}
+      enabled: false,
+      options: {}
     },
     mqpacker: {
-      enabled:false,
-      options:{}
+      enabled: false,
+      options: {}
     },
     cssnano: {
-      enabled:false,
-      options:{}
+      enabled: false,
+      options: {}
     }
   },
   js: {
@@ -85,6 +85,7 @@ var options = {
     sassHashTemplate: __dirname + '/lib/templates/_iconhash.scss',
     sassFontPath: '../fonts/',
     className: 'icon',
+    options: {}
   },
   wig: {
     outDir: 'public',
@@ -135,18 +136,20 @@ actless.initTasks = function(gulp, rootPath) {
     var processors = [];
     if (options.sass.cssnext.enabled) {
       processors.push(require('postcss-cssnext')(options.sass.cssnext.options));
-    }else if(options.sass.prefixer){
-      processors.push(require('autoprefixer')(Object.assign({browsers:options.sass.prefixer.browsers},options.sass.prefixer.options)));
+    } else if (options.sass.prefixer) {
+      processors.push(require('autoprefixer')(Object.assign({
+        browsers: options.sass.prefixer.browsers
+      }, options.sass.prefixer.options)));
     }
-    if(options.sass.mqpacker.enabled){
+    if (options.sass.mqpacker.enabled) {
       processors.push(require('css-mqpacker')(options.sass.mqpacker.options));
     }
-    if(options.sass.cssnano.enabled){
+    if (options.sass.cssnano.enabled) {
       processors.push(require('cssnano')(options.sass.cssnano.options));
 
     }
 
-    if(processors.length){
+    if (processors.length) {
       g = g.pipe(postcss(processors));
     }
     g = g.pipe(plumber.stop())
@@ -231,14 +234,14 @@ actless.initTasks = function(gulp, rootPath) {
 
   gulp.task('actless:icons:compile', () => {
     return gulp.src(path.join(rootPath, options.icon.minifiedDir, '**', '*.svg'))
-      .pipe(iconfont({
+      .pipe(iconfont(Object.assign({
         fontName: options.icon.fontName,
         className: options.icon.className,
         formats: ['svg', 'ttf', 'eot', 'woff'],
         startUnicode: 0xF001,
         fontHeight: 512,
         descent: 64
-      }))
+      }, options.icon.options)))
       .on('glyphs', (codepoints, opt) => {
         var sassDir = options.icon.sassDir ? options.icon.sassDir : options.sass.srcDir;
         codepoints.forEach((val) => {
