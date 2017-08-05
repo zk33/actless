@@ -1,6 +1,4 @@
-
-// NOTE: /assets/sass/_icon.scssはgulpで自動生成しているので、主導での編集はしないでください
-
+// NOTE: /assets/sass/_icon.scssはgulpで自動生成しているので、手動での編集はしないでください
 
 @font-face {
 	font-family: "{{ fontName }}";
@@ -41,4 +39,5 @@
 
 {% for glyph in glyphs %}
 .{{ className }}-{{ glyph.name }}:before{ content:"\{{ glyph.codepoint }}"}
+${{varName}}_{{ glyph.name }}:"\{{ glyph.codepoint }}";
 {% endfor %}

@@ -79,8 +79,8 @@ var options = {
       to: ''
     },
     minifiedDir: 'assets/icons_min/',
-    fontName: 'icons',
-    iconSassName: '_icons',
+    fontName: 'icon',
+    iconSassName: '_icon',
     sassTemplate: __dirname + '/lib/templates/_icon.scss',
     sassHashTemplate: __dirname + '/lib/templates/_iconhash.scss',
     sassFontPath: '../fonts/',
@@ -252,7 +252,8 @@ actless.initTasks = function(gulp, rootPath) {
             glyphs: codepoints,
             fontName: options.icon.fontName,
             fontPath: options.icon.sassFontPath,
-            className: options.icon.className
+            className: options.icon.className,
+            varName: options.icon.iconSassName.substr(1)
           }))
           .pipe(gulpconcat(options.icon.iconSassName + '.scss'))
           .pipe(gulp.dest(path.join(rootPath, sassDir)));
