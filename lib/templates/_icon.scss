@@ -10,7 +10,7 @@
 [class*=" {{ className }}-"],
 [class^="{{ className }}-"] {
   display: inline-block;
-  font-family: '{{ fontname }}';
+  font-family: '{{ fontName }}';
   speak: none;
   font-style: normal;
   font-weight: normal;
