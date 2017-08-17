@@ -2,17 +2,23 @@
 
 @font-face {
 	font-family: "{{ fontName }}";
-		src: url('{{ fontPath }}{{ fontName }}.woff#{$iconhash}') format('woff'),
-		url('{{ fontPath }}{{ fontName }}.ttf#{$iconhash}') format('truetype')
+	src: url('{{ fontPath }}{{ fontName }}.woff#{$iconhash}') format('woff'),
+		url('{{ fontPath }}{{ fontName }}.ttf#{$iconhash}') format('truetype');
 }
 
-.{{ className }} {
+.{{ className }},
+[class*=" {{ className }}-"],
+[class^="{{ classname }}-"] {
   display: inline-block;
-  font: normal normal normal 14px/1 {{ fontName }};
-  font-size: inherit;
-  text-rendering: auto;
+  font-family: '{{ fontname }}';
+  speak: none;
+  font-style: normal;
+  font-weight: normal;
+  font-variant: normal;
+  text-transform: none;
+  line-height: 1;
   -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale
+  -moz-osx-font-smoothing: grayscale;
 }
 
 .{{ className }}-spin {
