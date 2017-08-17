@@ -8,7 +8,7 @@
 
 .{{ className }},
 [class*=" {{ className }}-"],
-[class^="{{ classname }}-"] {
+[class^="{{ className }}-"] {
   display: inline-block;
   font-family: '{{ fontname }}';
   speak: none;
