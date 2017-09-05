@@ -356,10 +356,12 @@ actless.initTasks = function(gulp, rootPath) {
   });
 
   // test server
-  var testUrl = url.format(options.server.url);
-  gulp.task('actless:server:open', function() {
-    open(testUrl);
-  });
+  if (options.server.type !== 'none') {
+    var testUrl = url.format(options.server.url);
+    gulp.task('actless:server:open', function() {
+      open(testUrl);
+    });
+  }
 
   if (options.server.type === 'node') {
     // test server(Nodejs)
@@ -393,11 +395,11 @@ actless.initTasks = function(gulp, rootPath) {
     }
   } else if (options.server.type === 'php') {
     // test server(PHP)
-    var cmd = 'php -S ' + options.server.hostname + ':' + options.server.url.port + ' -t' + path.join(rootPath, options.publicDir);
+    var cmd = 'php -S ' + options.server.url.hostname + ':' + options.server.url.port + ' -t' + path.join(rootPath, options.publicDir);
     gulp.task('actless:server', shell.task([cmd]));
   } else if (options.server.type === 'python') {
     // test server(Python)
-    var cmd = 'pushd ' + path.join(rootPath, options.publicDir) + '; python -m SimpleHTTPServer ' + optiions.server.url.port + '; popd'
+    var cmd = 'pushd ' + path.join(rootPath, options.publicDir) + '; python -m SimpleHTTPServer ' + options.server.url.port + '; popd'
     gulp.task('actless:server', shell.task([cmd]));
   } else if (options.server.type === 'gae') {
     // test server(GAE)
@@ -442,19 +444,19 @@ actless.initTasks = function(gulp, rootPath) {
     gulp.watch(assetHashSrc, ['actless:assetHash']);
   });
 
-
-
   gulp.task('actless:compile', ['actless:sass', 'actless:js', 'actless:assetHash', 'actless:wig', 'actless:prettify', 'actless:nonPrettify']);
   gulp.task('actless:compile-full', ['actless:compile', 'actless:icons:svgmin', 'actless:icons:compile', 'actless:icons:hash']);
   gulp.task('actless:watch', ['actless:sass:watch', 'actless:js:watch', 'actless:assetHash:watch', 'actless:wig:watch', 'actless:prettify:watch']);
   gulp.task('actless:watch-full', ['actless:watch', 'actless:icons:watch']);
-  var defaultTasks = ['actless:compile', 'actless:watch', 'actless:server', 'actless:server:open'];
-  var fullTasks = ['actless:compile-full', 'actless:watch-full', 'actless:server', 'actless:server:open'];
-  if (options.server.livereload) {
-    defaultTasks.push('actless:server:livereload');
-    defaultTasks.push('actless:server:livereload:watch');
-    fullTasks.push('actless:server:livereload');
-    fullTasks.push('actless:server:livereload:watch');
+  var defaultTasks = ['actless:compile', 'actless:watch'];
+  var fullTasks = ['actless:compile-full', 'actless:watch-full'];
+  if (options.server.type !== 'none') {
+    defaultTasks.push('actless:server', 'actless:server:open');
+    fullTasks.push('actless:server', 'actless:server:open');
+  }
+  if (options.server.type === 'node' && options.server.livereload) {
+    defaultTasks.push('actless:server:livereload', 'actless:server:livereload:watch');
+    fullTasks.push('actless:server:livereload','actless:server:livereload:watch');
   }
   gulp.task('actless:default', defaultTasks);
   gulp.task('actless:full', fullTasks);
