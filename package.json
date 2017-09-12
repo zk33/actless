@@ -1,6 +1,6 @@
 {
   "name": "actless",
-  "version": "4.0.1",
+  "version": "4.0.2",
   "description": "Static website generator/scaffolding tool based on wig",
   "main": "index.js",
   "scripts": {
@@ -61,7 +61,7 @@
     "sanitize.css": "^5.0.0",
     "vinyl-source-stream": "^1.1.0",
     "walk-sync": "^0.3.1",
-    "wig": "^1.0.2"
+    "wig": "^1.0.3"
   },
   "devDependencies": {
     "gulp": "^3.9.0"
