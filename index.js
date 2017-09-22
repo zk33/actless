@@ -297,9 +297,12 @@ actless.initTasks = function(gulp, rootPath) {
   if (options.prettify && options.prettify.enabled) {
     wigOpt.outDir = options.prettify.tmpDir || 'html_tmp';
   }
-  var builder = new Wig(wigOpt);
-  builder.addRendererFilter('date', require('nunjucks-date-filter'));
+  var builder;
   gulp.task('actless:wig', function() {
+    if(!builder){
+      builder= new Wig(wigOpt);
+      builder.addRendererFilter('date', require('nunjucks-date-filter'));
+    }
     try {
       builder.build();
     } catch (e) {
