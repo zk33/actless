@@ -412,12 +412,11 @@ actless.initTasks = function(gulp, rootPath) {
 
   // generate asset file hash(JS/CSS) ============================
   /* calc checksum ======================================= */
-
+  var assetHashDestDir = options.assetHash.destDir ? options.assetHash.destDir : options.wig.dataDir;
   var assetHashSrc = [
     path.join(rootPath, options.sass.destDir),
     path.join(rootPath, options.js.destDir)
   ];
-  var assetHashDestDir = options.assetHash.destDir ? options.assetHash.destDir : options.wig.dataDir;
   Array.prototype.push.apply(assetHashSrc, options.assetHash.extraAssetDir.map((v) => {
     return path.join(rootPath, v);
   }));
@@ -443,8 +442,16 @@ actless.initTasks = function(gulp, rootPath) {
       fs.writeFileSync(path.join(assetHashDestDir, '_assetHash.json'), JSON.stringify(res, null, 2));
     }
   });
+
+  var assetHashWatchSrc = [
+    path.join(rootPath, options.sass.destDir, '**','*.css'),
+    path.join(rootPath, options.js.destDir, '**','*.js')
+  ];
+  Array.prototype.push.apply(assetHashWatchSrc, options.assetHash.extraAssetDir.map((v) => {
+    return path.join(rootPath, v, '**', '*');
+  }));
   gulp.task('actless:assetHash:watch', ['actless:assetHash'], function() {
-    gulp.watch(assetHashSrc, ['actless:assetHash']);
+    gulp.watch(assetHashWatchSrc, ['actless:assetHash']);
   });
 
   gulp.task('actless:compile', ['actless:sass', 'actless:js', 'actless:assetHash', 'actless:wig', 'actless:prettify', 'actless:nonPrettify']);
