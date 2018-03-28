@@ -70,4 +70,4 @@ options.prettify.options = {
 
 // ==========================================
 
-gulp = actless.initTasks(gulp, __dirname, actlessOptions);
+gulp = actless.initTasks(gulp, __dirname, options);
