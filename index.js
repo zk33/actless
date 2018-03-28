@@ -31,91 +31,100 @@ var consolidate = require('gulp-consolidate');
 var iconfont = require('gulp-iconfont');
 var walkSync = require('walk-sync');
 
-var options = {
-  publicDir: 'public',
-  sass: {
-    srcDir: 'assets/sass',
-    destDir: 'public/assets/css',
-    style: 'compact',
-    loadPath: [
-      './node_modules/actless/sass',
-      './node_modules/bootstrap-sass/assets/stylesheets',
-      './node_modules/material-design-lite/src',
-      './node_modules/sanitize.css'
-    ],
-    prefixer: {
-      enabled: true,
-      browsers: ['last 2 versions', '> 4%'],
-      options: {}
-    },
-    cssnext: {
-      enabled: false,
-      options: {}
-    },
-    mqpacker: {
-      enabled: false,
-      options: {}
-    },
-    cssnano: {
-      enabled: false,
-      options: {}
-    }
-  },
-  js: {
-    srcDir: 'assets/js',
-    entry: 'assets/js/*.js',
-    watch: ['assets/js/**/*.js', 'assets/js/**/*.jsx'],
-    destDir: 'public/assets/js',
-    commonFileName: 'common.js',
-    babelPresets: ['es2015', "react"],
-    exclude: []
-  },
-  icon: {
-    srcDir: 'assets/icons/',
-    distDir: 'public/assets/fonts/',
-    sassDir: '',
-    renameSrcFile: {
-      from: 'iconsのコピー_',
-      to: ''
-    },
-    minifiedDir: 'assets/icons_min/',
-    fontName: 'icon',
-    iconSassName: '_icon',
-    sassTemplate: __dirname + '/lib/templates/_icon.scss',
-    sassHashTemplate: __dirname + '/lib/templates/_iconhash.scss',
-    sassFontPath: '../fonts/',
-    className: 'icon',
+var options = {}
+
+// sass compile options
+options.sass = {
+  srcDir: 'assets/sass',
+  destDir: 'public/assets/css',
+  style: 'compact',
+  includePaths: [
+    './node_modules/actless/sass',
+    './node_modules/bootstrap-sass/assets/stylesheets',
+    './node_modules/material-design-lite/src',
+    './node_modules/sanitize.css'
+  ],
+  prefixer: { // deprecated: please use cssnext
+    enabled: false,
+    browsers: ['last 2 versions', '> 4%'],
     options: {}
   },
-  wig: {
-    outDir: 'public',
-    dataDir: 'data',
-    tmplDir: 'templates',
-    verbose: true
-  },
-  server: {
-    type: 'node',
-    livereload: true,
-    gaeAppRoot: 'app', // for app engine only
-    url: {
-      protocol: 'http',
-      hostname: 'localhost',
-      port: 3000
-    }
-  },
-  prettify: {
-    enabled: false,
-    tmpDir: 'tmp_html',
-    options: {
-      indent_size: 2,
-    }
-  },
-  assetHash: {
+  cssnext: {
     enabled: true,
-    destDir: '',
-    extraAssetDir: []
+    options: {
+      browsers: ['last 2 versions', '> 4%']
+    }
+  },
+  mqpacker: {
+    enabled: false,
+    options: {}
+  },
+  cssnano: {
+    enabled: false,
+    options: {}
   }
+};
+// js compile options
+options.js = {
+  srcDir: 'assets/js',
+  entry: 'assets/js/*.js',
+  watch: ['assets/js/**/*.js', 'assets/js/**/*.jsx'],
+  destDir: 'public/assets/js',
+  commonFileName: 'common.js',
+  babelPresets: ['es2015', "react"],
+  exclude: []
 }
+// icon font compile options
+options.icon = {
+  srcDir: 'assets/icons/',
+  destDir: 'public/assets/fonts/',
+  sassDir: '',
+  renameSrcFile: {
+    from: 'iconsのコピー_',
+    to: ''
+  },
+  minifiedDir: 'assets/icons_min/',
+  fontName: 'icon',
+  iconSassName: '_icon',
+  sassTemplate: __dirname + '/lib/templates/_icon.scss',
+  sassHashTemplate: __dirname + '/lib/templates/_iconhash.scss',
+  sassFontPath: '../fonts/',
+  className: 'icon',
+  options: {}
+};
+// wig(HTML builder) compile options
+options.wig = {
+  publicDir: 'public',
+  dataDir: 'data',
+  tmplDir: 'templates',
+  verbose: true
+};
+// test server options
+options.server = {
+  type: 'node',
+  livereload: true,
+  rootDir: 'public',
+  gaeAppRoot: 'app', // for app engine only
+  url: {
+    protocol: 'http',
+    hostname: 'localhost',
+    port: 3000
+  }
+};
+// HTML prettify options
+options.prettify = {
+  enabled: false,
+  tmpDir: 'tmp_html',
+  options: {
+    indent_size: 2,
+  }
+};
+// generate assetHash for cache busterring
+options.assetHash = {
+  enabled: true,
+  destDir: '',
+  extraAssetDir: []
+};
 
 var actless = {};
 
@@ -128,7 +137,7 @@ actless.initTasks = function(gulp, rootPath) {
     var g = gulp.src(path.join(rootPath, options.sass.srcDir, '**', '*'))
       .pipe(plumber())
       .pipe(sass({
-        includePaths: options.sass.loadPath,
+        includePaths: options.sass.includePaths,
         outputStyle: options.sass.style
       }).on('error', sass.logError))
 
@@ -136,7 +145,7 @@ actless.initTasks = function(gulp, rootPath) {
     var processors = [];
     if (options.sass.cssnext.enabled) {
       processors.push(require('postcss-cssnext')(options.sass.cssnext.options));
-    } else if (options.sass.prefixer) {
+    } else if (options.sass.prefixer.enabled) {
       processors.push(require('autoprefixer')(Object.assign({
         browsers: options.sass.prefixer.browsers
       }, options.sass.prefixer.options)));
@@ -258,13 +267,13 @@ actless.initTasks = function(gulp, rootPath) {
           .pipe(gulpconcat(options.icon.iconSassName + '.scss'))
           .pipe(gulp.dest(path.join(rootPath, sassDir)));
       })
-      .pipe(gulp.dest(path.join(rootPath, options.icon.distDir)));
+      .pipe(gulp.dest(path.join(rootPath, options.icon.destDir)));
   });
 
   gulp.task('actless:icons:hash', function() {
     var data;
     try {
-      data = fs.readFileSync(path.join(rootPath, options.icon.distDir, options.icon.fontName + '.woff'));
+      data = fs.readFileSync(path.join(rootPath, options.icon.destDir, options.icon.fontName + '.woff'));
     } catch (e) {
       console.log(e);
       return;
@@ -283,7 +292,7 @@ actless.initTasks = function(gulp, rootPath) {
   gulp.task('actless:icons:watch', ['actless:icons:svgmin', 'actless:icons:compile', 'actless:icons:hash'], function() {
     gulp.watch(path.join(rootPath, options.icon.srcDir, '**', '*.svg'), ['actless:icons:svgmin']);
     gulp.watch(path.join(rootPath, options.icon.minifiedDir, '**', '*.svg'), ['actless:icons:compile']);
-    gulp.watch(path.join(rootPath, options.icon.distDir, options.icon.fontName + '.woff'), ['actless:icons:hash']);
+    gulp.watch(path.join(rootPath, options.icon.destDir, options.icon.fontName + '.woff'), ['actless:icons:hash']);
   });
 
   // wig ==========================
@@ -299,8 +308,8 @@ actless.initTasks = function(gulp, rootPath) {
   }
   var builder;
   gulp.task('actless:wig', function() {
-    if(!builder){
-      builder= new Wig(wigOpt);
+    if (!builder) {
+      builder = new Wig(wigOpt);
       builder.addRendererFilter('date', require('nunjucks-date-filter'));
     }
     try {
@@ -332,10 +341,10 @@ actless.initTasks = function(gulp, rootPath) {
   gulp.task('actless:prettify', function() {
     gulp.src(prettifySrc)
       .pipe(prettify(options.prettify.options))
-      .pipe(gulp.dest(options.publicDir));
+      .pipe(gulp.dest(options.wig.publicDir));
   });
   gulp.task('actless:nonPrettify', function() {
-    gulp.src(nonPrettifySrc).pipe(gulp.dest(options.publicDir));
+    gulp.src(nonPrettifySrc).pipe(gulp.dest(options.wig.publicDir));
   });
   gulp.task('actless:prettify:watch', function() {
     var prettifyTimeoutId = null;
@@ -370,21 +379,21 @@ actless.initTasks = function(gulp, rootPath) {
     // test server(Nodejs)
     gulp.task('actless:server', function() {
       connect.server({
-        root: path.join(rootPath, options.publicDir),
+        root: path.join(rootPath, options.server.rootDir),
         port: options.server.url.port,
         livereload: options.server.livereload
       });
     });
     if (options.server.livereload) {
       gulp.task('actless:server:livereload', function() {
-        gulp.src(path.join(rootPath, options.publicDir, '**', '*.*')).pipe(connect.reload());
+        gulp.src(path.join(rootPath, options.server.rootDir, '**', '*.*')).pipe(connect.reload());
       });
       gulp.task('actless:server:livereload:watch', function() {
         var timeoutId = null;
         watch([
-          path.join(rootPath, options.publicDir, '**', '*.css'),
-          path.join(rootPath, options.publicDir, '**', '*.js'),
-          path.join(rootPath, options.publicDir, '**', '*.html')
+          path.join(rootPath, options.server.rootDir, '**', '*.css'),
+          path.join(rootPath, options.server.rootDir, '**', '*.js'),
+          path.join(rootPath, options.server.rootDir, '**', '*.html')
         ], function() {
           if (timeoutId) {
             clearTimeout(timeoutId);
@@ -398,11 +407,11 @@ actless.initTasks = function(gulp, rootPath) {
     }
   } else if (options.server.type === 'php') {
     // test server(PHP)
-    var cmd = 'php -S ' + options.server.url.hostname + ':' + options.server.url.port + ' -t' + path.join(rootPath, options.publicDir);
+    var cmd = 'php -S ' + options.server.url.hostname + ':' + options.server.url.port + ' -t' + path.join(rootPath, options.server.rootDir);
     gulp.task('actless:server', shell.task([cmd]));
   } else if (options.server.type === 'python') {
     // test server(Python)
-    var cmd = 'pushd ' + path.join(rootPath, options.publicDir) + '; python -m SimpleHTTPServer ' + options.server.url.port + '; popd'
+    var cmd = 'pushd ' + path.join(rootPath, options.server.rootDir) + '; python -m SimpleHTTPServer ' + options.server.url.port + '; popd'
     gulp.task('actless:server', shell.task([cmd]));
   } else if (options.server.type === 'gae') {
     // test server(GAE)
@@ -444,8 +453,8 @@ actless.initTasks = function(gulp, rootPath) {
   });
 
   var assetHashWatchSrc = [
-    path.join(rootPath, options.sass.destDir, '**','*.css'),
-    path.join(rootPath, options.js.destDir, '**','*.js')
+    path.join(rootPath, options.sass.destDir, '**', '*.css'),
+    path.join(rootPath, options.js.destDir, '**', '*.js')
   ];
   Array.prototype.push.apply(assetHashWatchSrc, options.assetHash.extraAssetDir.map((v) => {
     return path.join(rootPath, v, '**', '*');
@@ -466,7 +475,7 @@ actless.initTasks = function(gulp, rootPath) {
   }
   if (options.server.type === 'node' && options.server.livereload) {
     defaultTasks.push('actless:server:livereload', 'actless:server:livereload:watch');
-    fullTasks.push('actless:server:livereload','actless:server:livereload:watch');
+    fullTasks.push('actless:server:livereload', 'actless:server:livereload:watch');
   }
   gulp.task('actless:default', defaultTasks);
   gulp.task('actless:full', fullTasks);
