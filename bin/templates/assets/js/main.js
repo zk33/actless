@@ -1,3 +1,3 @@
 'use strict';
 
-// your awesome js
+console.log('hello,world!');

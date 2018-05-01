@@ -40,8 +40,6 @@ options.sass = {
   style: 'compact',
   includePaths: [
     './node_modules/actless/sass',
-    './node_modules/bootstrap-sass/assets/stylesheets',
-    './node_modules/material-design-lite/src',
     './node_modules/sanitize.css'
   ],
   prefixer: { // deprecated: please use cssnext
@@ -71,7 +69,11 @@ options.js = {
   watch: ['assets/js/**/*.js', 'assets/js/**/*.jsx'],
   destDir: 'public/assets/js',
   commonFileName: 'common.js',
-  babelPresets: ['es2015', "react"],
+  babelPresets: [['env',{
+    "targets": {
+      "browsers": ["last 2 versions", "IE 11"]
+    }
+  }], "react"],
   exclude: []
 }
 // icon font compile options
@@ -146,6 +148,7 @@ actless.initTasks = function(gulp, rootPath) {
     if (options.sass.cssnext.enabled) {
       processors.push(require('postcss-cssnext')(options.sass.cssnext.options));
     } else if (options.sass.prefixer.enabled) {
+      console.warn('options.sass.prefixer is deprecated. Use cssnext instead.');
       processors.push(require('autoprefixer')(Object.assign({
         browsers: options.sass.prefixer.browsers
       }, options.sass.prefixer.options)));
