@@ -145,13 +145,13 @@ actless.initTasks = function(gulp, rootPath) {
 
     //postcss
     var processors = [];
-    if (options.sass.cssnext.enabled) {
-      processors.push(require('postcss-cssnext')(options.sass.cssnext.options));
-    } else if (options.sass.prefixer.enabled) {
-      console.warn('options.sass.prefixer is deprecated. Use cssnext instead.');
-      processors.push(require('autoprefixer')(Object.assign({
-        browsers: options.sass.prefixer.browsers
-      }, options.sass.prefixer.options)));
+    if (options.sass.cssnext.enabled || options.sass.prefixer.enabled) {
+      let opt = options.sass.cssnext.options;
+      if(options.sass.prefixer.enabeld){
+        console.warn('options.sass.prefixer is deprecated. Use cssnext instead.');
+        opt.browsers = options.sass.prefixer.browsers;
+      }
+      processors.push(require('postcss-cssnext')(opt));
     }
     if (options.sass.mqpacker.enabled) {
       processors.push(require('css-mqpacker')(options.sass.mqpacker.options));
