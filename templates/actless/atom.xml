@@ -2,9 +2,9 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
 
   <title>{{rssSiteTitle}}</title>
-  <link href="{{rssSiteLink}}http://example.org/"/>
+  <link href="{{rssSiteLink}}"/>
   {%- if _pages[0] %}
-  <updated>{{_pages[0].params._updated | date("YYYY-MM-DDTHH:mm:ssZ") }}</updated>
+  <updated>{{_pages[0]._updated | date("YYYY-MM-DDTHH:mm:ssZ") }}</updated>
   {% endif -%}
   {%- if rssAuthors %}
   {%- for author in rssAuthors %}
@@ -19,22 +19,22 @@
 
 
   {%- for page in _pages %}
-  {%- if page.name != 'atom.xml' %}
+  {%- if page._name != 'atom.xml' %}
   <entry>
-    <title type="text">{{ page.params.title}}</title>
+    <title type="text">{{ page.title}}</title>
     <link href="{{ rssBaseUrl }}{{ page._path }}"/>
-    <id>{{ rssBaseUrl }}{{ page.path }}</id>
-    {%- if page.params._updated %}
-    <updated>{{ page.params._updated | date("YYYY-MM-DDTHH:mm:ssZ") }}</updated>
+    <id>{{ rssBaseUrl }}{{ page._path }}</id>
+    {%- if page._updated %}
+    <updated>{{ page._updated | date("YYYY-MM-DDTHH:mm:ssZ") }}</updated>
     {%- else -%}
-      {%- if page.params._created %}
-      <updated>{{ page.params._created | date("YYYY-MM-DDTHH:mm:ssZ") }}</updated>
+      {%- if page._created %}
+      <updated>{{ page._created | date("YYYY-MM-DDTHH:mm:ssZ") }}</updated>
       {% endif -%}
     {%- endif -%}
-    {%- if page.params._created %}
-    <published>{{ page.params._created | date("YYYY-MM-DDTHH:mm:ssZ") }}</published>
+    {%- if page._created %}
+    <published>{{ page._created | date("YYYY-MM-DDTHH:mm:ssZ") }}</published>
     {% endif -%}
-    <content type="html">{{ page.params._html }}</content>
+    <content type="html">{{ page._html }}</content>
   </entry>
   {% endif -%}
   {% endfor -%}
