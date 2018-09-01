@@ -69,11 +69,11 @@ options.js = {
   watch: ['assets/js/**/*.js', 'assets/js/**/*.jsx'],
   destDir: 'public/assets/js',
   commonFileName: 'common.js',
-  babelPresets: [['env',{
+  babelPresets: [['@babel/preset-env',{
     "targets": {
       "browsers": ["last 2 versions", "IE 11"]
     }
-  }], "react"],
+  }], "@babel/preset-react"],
   exclude: []
 }
 // icon font compile options

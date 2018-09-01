@@ -1,7 +1,7 @@
-'use strict';
+"use strict";
 
-var actless = require('actless');
-var gulp = require('gulp');
+var actless = require("actless");
+var gulp = require("gulp");
 
 var options = actless.options;
 
@@ -22,7 +22,7 @@ var options = actless.options;
 //options.js.entry = 'assets/js/*.js';
 //options.js.watch = ['assets/js/**/*.js', 'assets/js/**/*.jsx'];
 //options.js.commonFileName = 'common.js';
-//options.js.babelPresets = [['env',{ "targets": { "browsers": ["last 2 versions", "IE 11"] } }], "react"];
+//options.js.babelPresets = [['@babel/preset-env',{ "targets": { "browsers": ["last 2 versions", "IE 11"] } }], "@babel/preset-react"];
 
 // icon font compile options ==================
 //options.icon.srcDir = 'assets/icons/';
