@@ -11,4 +11,6 @@ opt.prettify.enabled = true;
 opt.icon.useTmp = true;
 opt.icon.options.normalize = true;
 
+opt.js.skipMinify = false;
+
 actless.initTasks(gulp, __dirname)

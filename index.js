@@ -69,12 +69,15 @@ options.js = {
   watch: ['assets/js/**/*.js', 'assets/js/**/*.jsx'],
   destDir: 'public/assets/js',
   commonFileName: 'common.js',
-  babelPresets: [['@babel/preset-env',{
-    "targets": {
-      "browsers": ["last 2 versions", "IE 11"]
-    }
-  }], "@babel/preset-react"],
-  exclude: []
+  babelPresets: [
+    ['@babel/preset-env', {
+      "targets": {
+        "browsers": ["last 2 versions", "IE 11"]
+      }
+    }], "@babel/preset-react"
+  ],
+  exclude: [],
+  skipMinify: false
 }
 // icon font compile options
 options.icon = {
@@ -147,7 +150,7 @@ actless.initTasks = function(gulp, rootPath) {
     var processors = [];
     if (options.sass.cssnext.enabled || options.sass.prefixer.enabled) {
       let opt = options.sass.cssnext.options;
-      if(options.sass.prefixer.enabeld){
+      if (options.sass.prefixer.enabeld) {
         console.warn('options.sass.prefixer is deprecated. Use cssnext instead.');
         opt.browsers = options.sass.prefixer.browsers;
       }
@@ -185,11 +188,14 @@ actless.initTasks = function(gulp, rootPath) {
   gulp.task('actless:js', () => {
     var write = ((filepath) => {
       return concat((content) => {
-        return file(path.basename(filepath), content, {
-            src: true
-          })
-          .pipe(uglify())
-          .pipe(gulp.dest(path.join(rootPath, options.js.destDir)))
+        var res = file(path.basename(filepath), content, {
+          src: true
+        })
+        if (!options.js.skipMinify) {
+          res.pipe(uglify())
+        }
+        res.pipe(gulp.dest(path.join(rootPath, options.js.destDir)))
+        return res;
       });
     });
     var files = glob.sync(path.join(rootPath, options.js.entry), {

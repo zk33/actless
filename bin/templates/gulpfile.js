@@ -23,6 +23,7 @@ var options = actless.options;
 //options.js.watch = ['assets/js/**/*.js', 'assets/js/**/*.jsx'];
 //options.js.commonFileName = 'common.js';
 //options.js.babelPresets = [['@babel/preset-env',{ "targets": { "browsers": ["last 2 versions", "IE 11"] } }], "@babel/preset-react"];
+//options.js.skipMinify = false;
 
 // icon font compile options ==================
 //options.icon.srcDir = 'assets/icons/';
