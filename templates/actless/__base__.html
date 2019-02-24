@@ -1,24 +1,25 @@
 <!DOCTYPE html>
 <html lang="ja">
-<head>
-  <meta charset="UTF-8">
-  <title>{{title}}</title>
-  {% block head %}
-  <link rel="stylesheet" href="{{_rel_root}}/assets/css/style.css">
-  {% endblock %}
-</head>
-<body>
-  <header>
-    {% block header %}{% endblock %}
-  </header>
-  <main>
-  {% block main %}
-    {{_html|safe}}
-  {% endblock %}
-  </main>
-  <footer>
-    {% block footer %}{% endblock %}
-  </footer>
-  <script src="{{_rel_root}}/assets/js/main.js"></script>
-</body>
+  <head>
+    <meta charset="UTF-8" />
+    <title>{{ title }}</title>
+    {% block head %}
+    <link rel="stylesheet" href="{{ _rel_root }}/assets/css/style.css" />
+    {% endblock %}
+  </head>
+  <body>
+    <header>
+      {% block header %}{% endblock %}
+    </header>
+    <main>
+      {% block main %}
+      {{ _html | safe }}
+      {% endblock %}
+    </main>
+    <footer>
+      {% block footer %}{% endblock %}
+    </footer>
+    <script src="{{ _rel_root }}/assets/js/common.js"></script>
+    <script src="{{ _rel_root }}/assets/js/main.js"></script>
+  </body>
 </html>
