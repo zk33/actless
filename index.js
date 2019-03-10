@@ -153,7 +153,7 @@ actless.initTasks = function(gulp, rootPath) {
     var processors = [];
     if (options.sass.cssnext.enabled || options.sass.prefixer.enabled) {
       let opt = options.sass.cssnext.options;
-      if (options.sass.prefixer.enabeld) {
+      if (options.sass.prefixer.enabled) {
         console.warn("options.sass.prefixer is deprecated. Use cssnext instead.");
         opt.browsers = options.sass.prefixer.browsers;
       }
@@ -269,8 +269,7 @@ actless.initTasks = function(gulp, rootPath) {
       .src(path.join(rootPath, options.icon.minifiedDir, "**", "*.svg"))
       .pipe(
         iconfont(
-          Object.assign(
-            {
+          Object.assign({
               fontName: options.icon.fontName,
               className: options.icon.className,
               formats: ["svg", "ttf", "eot", "woff"],
@@ -349,11 +348,12 @@ actless.initTasks = function(gulp, rootPath) {
     wigOpt.tmplDir = [wigOpt.tmplDir];
   }
   wigOpt.tmplDir.push(path.join(__dirname, "templates"));
-  // change output directory if prettify is enabeld
+  // change output directory if prettify is enabled
   if (options.prettify && options.prettify.enabled) {
     wigOpt.outDir = options.prettify.tmpDir || "html_tmp";
   }
   var builder;
+
   function runWig(cb) {
     if (!builder) {
       builder = new Wig(wigOpt);
@@ -380,46 +380,57 @@ actless.initTasks = function(gulp, rootPath) {
   gulp.task("actless:wig:watch", watchWig);
 
   // prettify =====================
-  var prettifySrc = [];
-  var nonPrettifySrc = [];
   if (options.prettify.enabled) {
+    var prettifySrc = [];
+    var nonPrettifySrc = [];
+
     prettifySrc.push(path.join(rootPath, options.prettify.tmpDir, "**", "*.html"));
     nonPrettifySrc.push(path.join(rootPath, options.prettify.tmpDir, "**", "*"));
     nonPrettifySrc.push("!" + path.join(rootPath, options.prettify.tmpDir, "**", "*.html"));
-  }
-  function runPrettify() {
-    return gulp
-      .src(prettifySrc)
-      .pipe(prettify(options.prettify.options))
-      .pipe(gulp.dest(options.wig.publicDir));
-  }
-  gulp.task("actless:prettify", runPrettify);
-  function runNonPrettify() {
-    return gulp.src(nonPrettifySrc).pipe(gulp.dest(options.wig.publicDir));
-  }
-  gulp.task("actless:nonPrettify", runNonPrettify);
-  function watchPrettify(cb) {
-    var prettifyTimeoutId = null;
-    var nonprettifyTimeoutId = null;
-    gulp.watch(prettifySrc, function(cb) {
+
+    function runPrettify() {
+      return gulp
+        .src(prettifySrc)
+        .pipe(prettify(options.prettify.options))
+        .pipe(gulp.dest(options.wig.publicDir));
+    }
+    gulp.task("actless:prettify", runPrettify);
+
+    function runNonPrettify() {
+      return gulp.src(nonPrettifySrc).pipe(gulp.dest(options.wig.publicDir));
+    }
+    gulp.task("actless:nonPrettify", runNonPrettify);
+
+    var prettifyTimeoutId;
+    gulp.task("actless:prettify:watch:run", function(cb) {
       if (prettifyTimeoutId) {
         clearTimeout(prettifyTimeoutId);
       }
       prettifyTimeoutId = setTimeout(runPrettify, 500);
       cb();
     });
-    gulp.watch(nonPrettifySrc, function(cb) {
+    var nonprettifyTimeoutId;
+    gulp.task("actless:nonPrettify:watch:run", function(cb) {
       if (nonprettifyTimeoutId) {
         clearTimeout(nonprettifyTimeoutId);
       }
       nonprettifyTimeoutId = setTimeout(runNonPrettify, 500);
       cb();
     });
-    cb();
-  }
-  gulp.task("actless:prettify:watch", watchPrettify);
 
-  // test server
+    function watchPrettify(cb) {
+      var prettifyTimeoutId = null;
+      var nonprettifyTimeoutId = null;
+      gulp.watch(prettifySrc, gulp.series("actless:prettify:watch:run"));
+      gulp.watch(nonPrettifySrc, gulp.series("actless:nonPrettify:watch:run"));
+      cb();
+    }
+    gulp.task("actless:prettify:watch", watchPrettify);
+  }
+
+
+  // test server ========================
+
   var runServer = function(cb) {
     console.log("actless:server not defined");
     cb();
@@ -458,22 +469,23 @@ actless.initTasks = function(gulp, rootPath) {
       runServerLivereload = function() {
         return gulp.src(path.join(rootPath, options.server.rootDir, "**", "*.*")).pipe(connect.reload());
       };
+      var llTimeoutId;
+      gulp.task("actless:server:livereload:reload", function(cb) {
+        if (llTimeoutId) {
+          clearTimeout(llTimeoutId);
+          llTimeoutId = null;
+        }
+        llTimeoutId = setTimeout(runServerLivereload, 500);
+        cb();
+      });
       watchServerLivereload = function(cb) {
-        var timeoutId = null;
         gulp.watch(
           [
             path.join(rootPath, options.server.rootDir, "**", "*.css"),
             path.join(rootPath, options.server.rootDir, "**", "*.js"),
             path.join(rootPath, options.server.rootDir, "**", "*.html")
           ],
-          function(cb) {
-            if (timeoutId) {
-              clearTimeout(timeoutId);
-              timeoutId = null;
-            }
-            timeoutId = setTimeout(runServerLivereload, 500);
-            cb();
-          }
+          gulp.series("actless:server:livereload:reload")
         );
         cb();
       };
@@ -519,6 +531,7 @@ actless.initTasks = function(gulp, rootPath) {
       return path.join(rootPath, v);
     })
   );
+
   function runAssetHash(cb) {
     if (options.assetHash.enabled) {
       var res = {};
@@ -554,7 +567,8 @@ actless.initTasks = function(gulp, rootPath) {
       return path.join(rootPath, v, "**", "*");
     })
   );
-  const watchAssetHash = gulp.series(runAssetHash, function(cb) {
+
+  const watchAssetHash = gulp.series("actless:assetHash", function(cb) {
     gulp.watch(assetHashWatchSrc, gulp.series("actless:assetHash"));
     cb();
   });
@@ -563,7 +577,7 @@ actless.initTasks = function(gulp, rootPath) {
   // compile
   const runCompile = gulp.parallel(
     gulp.series(gulp.parallel("actless:sass", "actless:js"), "actless:assetHash"),
-    gulp.series("actless:wig", gulp.parallel("actless:prettify", "actless:nonPrettify"))
+    (options.prettify.enabled ? gulp.series("actless:wig", gulp.parallel("actless:prettify", "actless:nonPrettify")) : "actless:wig")
   );
   gulp.task("actless:compile", runCompile);
 
@@ -575,13 +589,16 @@ actless.initTasks = function(gulp, rootPath) {
   gulp.task("actless:compile:full", runCompileFull);
 
   // watch
-  const runWatch = gulp.parallel(
-    "actless:sass:watch",
+  const watchTasks = ["actless:sass:watch",
     "actless:js:watch",
     "actless:assetHash:watch",
-    "actless:wig:watch",
-    "actless:prettify:watch"
-  );
+    "actless:wig:watch"
+  ]
+  if (options.prettify.enabled) {
+    watchTasks.push("actless:prettify:watch");
+  }
+
+  const runWatch = gulp.parallel.apply(null, watchTasks);
   gulp.task("actless:watch", runWatch);
 
   // watch all
