@@ -80,7 +80,9 @@ options.ts = {
   destDir: options.js.srcDir,
   exclude: [],
   options: {
-    jsx: 'react'
+    jsx: 'react',
+    target: 'esnext',
+    moduleResolution: 'node'
   }
 };
 // icon font compile options
@@ -252,6 +254,10 @@ actless.initTasks = function (gulp, rootPath) {
   function runTS(cb) {
     return gulp.src(options.ts.src)
       .pipe(typescript(options.ts.options))
+      .on("error", function (err) {
+        console.warn("Error : " + err.message + "\n" + err.stack);
+        this.emit("end");
+      })
       .js
       .pipe(gulp.dest(options.ts.destDir));
   }

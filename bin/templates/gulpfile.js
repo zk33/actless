@@ -32,7 +32,7 @@ var options = actless.options;
 //options.ts.src = "assets/ts/**/*{ts,tsx}";
 //options.ts.destDir = options.js.srcDir;
 //options.ts.exclude = [];
-//options.ts.options = { jsx: 'react' }; // options for gulp-typescript(https://github.com/ivogabe/gulp-typescript)
+//options.ts.options = { jsx: 'react', target: 'esnext', moduleResolution: 'node' }; // options for gulp-typescript(https://github.com/ivogabe/gulp-typescript)
 
 // icon font compile options ==================
 //options.icon.srcDir = 'assets/icons/';
