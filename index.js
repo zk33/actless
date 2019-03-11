@@ -22,7 +22,7 @@ const shell = require("gulp-shell");
 const connect = require("gulp-connect");
 const prettify = require("gulp-prettify");
 const svgmin = require("gulp-svgmin");
-const foreach = require("gulp-foreach");
+const flatmap = require("gulp-flatmap");
 const gulpconcat = require("gulp-concat");
 const consolidate = require("gulp-consolidate");
 const iconfont = require("gulp-iconfont");
@@ -267,7 +267,7 @@ actless.initTasks = function (gulp, rootPath) {
     return gulp
       .src(path.join(rootPath, options.icon.srcDir, "**", "*.svg"))
       .pipe(
-        foreach((stream, file) => {
+        flatmap((stream, file) => {
           var filename = file.path.replace(file.base, "");
           filename = filename.replace(options.icon.renameSrcFile.from, options.icon.renameSrcFile.to);
           return stream.pipe(svgmin()).pipe(gulpconcat(filename));
