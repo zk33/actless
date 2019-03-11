@@ -25,6 +25,13 @@ var options = actless.options;
 //options.js.babelPresets = [['@babel/preset-env',{ "targets": { "browsers": ["last 2 versions", "IE 11"] } }], "@babel/preset-react"];
 //options.js.skipMinify = false;
 
+// typescript options ========================
+//options.ts.enabled = true;
+//options.ts.src = "assets/ts/**/*{ts,tsx}";
+//options.ts.destDir = options.js.srcDir;
+//options.ts.exclude = [];
+//options.ts.options = { jsx: 'react' }; // options for gulp-typescript(https://github.com/ivogabe/gulp-typescript)
+
 // icon font compile options ==================
 //options.icon.srcDir = 'assets/icons/';
 //options.icon.destDir = 'public/assets/fonts/';
