@@ -12,7 +12,9 @@ var options = actless.options;
 // sass compile options ======================
 //options.sass.destDir = 'public/assets/css';
 //options.sass.style = 'compact';
-//options.sass.cssnext.options.xxx = 'xxx';
+//options.sass.postcssPresetEnv.enabled = true;
+//options.sass.postcssPresetEnv.options.browsers =  ["last 2 versions", "> 4%"];
+//options.sass.postcssPresetEnv.options.stage = 1 //4:stable >>> 0:unstable features
 //options.sass.mqpacker.enabled = true;
 //options.sass.cssnano.enabled = true;
 

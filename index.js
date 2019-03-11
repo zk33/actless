@@ -37,24 +37,19 @@ options.sass = {
   destDir: "public/assets/css",
   style: "compact",
   includePaths: ["./node_modules/actless/sass", "./node_modules/sanitize.css"],
-  prefixer: {
-    // deprecated: please use cssnext
-    enabled: false,
-    browsers: ["last 2 versions", "> 4%"],
-    options: {}
-  },
-  cssnext: {
+  postcssPresetEnv: {
     enabled: true,
     options: {
-      browsers: ["last 2 versions", "> 4%"]
+      browsers: ["last 2 versions", "> 4%"],
+      stage: 1
     }
   },
   mqpacker: {
-    enabled: false,
+    enabled: true,
     options: {}
   },
   cssnano: {
-    enabled: false,
+    enabled: true,
     options: {}
   }
 };
@@ -159,13 +154,9 @@ actless.initTasks = function (gulp, rootPath) {
       );
     //postcss
     var processors = [];
-    if (options.sass.cssnext.enabled || options.sass.prefixer.enabled) {
-      let opt = options.sass.cssnext.options;
-      if (options.sass.prefixer.enabled) {
-        console.warn("options.sass.prefixer is deprecated. Use cssnext instead.");
-        opt.browsers = options.sass.prefixer.browsers;
-      }
-      processors.push(require("postcss-cssnext")(opt));
+    if (options.sass.postcssPresetEnv.enabled) {
+      let opt = options.sass.postcssPresetEnv.options;
+      processors.push(require("postcss-preset-env")(opt));
     }
     if (options.sass.mqpacker.enabled) {
       processors.push(require("css-mqpacker")(options.sass.mqpacker.options));
