@@ -1,6 +1,6 @@
 {
   "name": "actless",
-  "version": "7.1.0",
+  "version": "8.0.0",
   "description": "Static website generator/scaffolding tool based on wig",
   "main": "index.js",
   "scripts": {
