@@ -53,16 +53,13 @@ var options = actless.options;
 
 // test server options ===================
 //options.server.type = 'node' // 'node' || 'python' || 'php' || 'gae' || 'none'
-//options.server.livereload = true;
 //options.server.rootDir = 'public';
 //options.server.gaeAppRoot = 'app'; // for app engine only
-/*
-options.server.url = {
-  protocol: 'http',
-  hostname: 'localhost',
-  port: 3000
-}
-*/
+//options.server.options.livereload = true;
+//options.server.options.host = "localhost";
+//options.server.options.port = 3000;
+//options.server.options.fallback = "index.html";
+
 
 // HTML prettify options =================
 //options.prettify.enabled = true;

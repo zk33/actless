@@ -19,7 +19,6 @@ const concat = require("concat-stream");
 const glob = require("glob");
 const uglify = require("gulp-uglify");
 const shell = require("gulp-shell");
-const connect = require("gulp-connect");
 const prettify = require("gulp-prettify");
 const svgmin = require("gulp-svgmin");
 const flatmap = require("gulp-flatmap");
@@ -27,6 +26,7 @@ const gulpconcat = require("gulp-concat");
 const consolidate = require("gulp-consolidate");
 const iconfont = require("gulp-iconfont");
 const walkSync = require("walk-sync");
+const webserver = require("gulp-webserver");
 const typescript = require("gulp-typescript");
 
 var options = {};
@@ -113,13 +113,16 @@ options.wig = {
 // test server options
 options.server = {
   type: "node",
-  livereload: true,
   rootDir: "public",
   gaeAppRoot: "app", // for app engine only
-  url: {
-    protocol: "http",
-    hostname: "localhost",
-    port: 3000
+  url: {},// for backward compatibility...
+  options: {
+    path: "/",
+    livereload: true,
+    host: "localhost",
+    port: 3000,
+    fallback: undefined,
+    https: false
   }
 };
 // HTML prettify options
@@ -454,6 +457,9 @@ actless.initTasks = function (gulp, rootPath) {
 
   // test server ========================
 
+  options.server.options.port = options.server.url.port || options.server.options.port;
+  options.server.options.host = options.server.url.hostname || options.server.options.host;
+
   var runServer = function (cb) {
     console.log("actless:server not defined");
     cb();
@@ -462,16 +468,12 @@ actless.initTasks = function (gulp, rootPath) {
     console.log("actless:server:open not defined");
     cb();
   };
-  var runServerLivereload = function (cb) {
-    console.log("actless:server:livereload not defined");
-    cb();
-  };
-  var watchServerLivereload = function (cb) {
-    console.log("actless:server:livereload:watch not defined");
-    cb();
-  };
+
   if (options.server.type !== "none") {
-    var testUrl = url.format(options.server.url);
+    var testUrl = options.server.options.https ? 'https://' : 'http://';
+    testUrl = testUrl + options.server.options.host;
+    testUrl = testUrl + ':' + options.server.options.port;
+    console.log(testUrl);
     runServerOpen = function (cb) {
       open(testUrl);
       cb();
@@ -480,46 +482,19 @@ actless.initTasks = function (gulp, rootPath) {
 
   if (options.server.type === "node") {
     // test server(Nodejs)
-    runServer = function (cb) {
-      connect.server({
-        root: path.join(rootPath, options.server.rootDir),
-        port: options.server.url.port,
-        livereload: options.server.livereload
-      });
-      cb();
-    };
-    if (options.server.livereload) {
-      runServerLivereload = function () {
-        return gulp.src(path.join(rootPath, options.server.rootDir, "**", "*.*")).pipe(connect.reload());
-      };
-      var llTimeoutId;
-      gulp.task("actless:server:livereload:reload", function (cb) {
-        if (llTimeoutId) {
-          clearTimeout(llTimeoutId);
-          llTimeoutId = null;
-        }
-        llTimeoutId = setTimeout(runServerLivereload, 500);
-        cb();
-      });
-      watchServerLivereload = function (cb) {
-        gulp.watch(
-          [
-            path.join(rootPath, options.server.rootDir, "**", "*.css"),
-            path.join(rootPath, options.server.rootDir, "**", "*.js"),
-            path.join(rootPath, options.server.rootDir, "**", "*.html")
-          ],
-          gulp.series("actless:server:livereload:reload")
-        );
-        cb();
-      };
+    runServer = () => {
+      return gulp.src(options.server.rootDir)
+        .pipe(webserver(options.server.options));
     }
+
+
   } else if (options.server.type === "php") {
     // test server(PHP)
     var cmd =
       "php -S " +
-      options.server.url.hostname +
+      options.server.options.host +
       ":" +
-      options.server.url.port +
+      options.server.options.port +
       " -t" +
       path.join(rootPath, options.server.rootDir);
     runServer = shell.task([cmd]);
@@ -529,20 +504,18 @@ actless.initTasks = function (gulp, rootPath) {
       "pushd " +
       path.join(rootPath, options.server.rootDir) +
       "; python -m SimpleHTTPServer " +
-      options.server.url.port +
+      options.server.options.port +
       "; popd";
     runServer = shell.task([cmd]);
   } else if (options.server.type === "gae") {
     // test server(GAE)
     var cmd =
-      "dev_appserver.py --port=" + options.server.url.port + " " + path.join(rootPath, options.server.gaeAppRoot);
+      "dev_appserver.py --port=" + options.server.options.port + " " + path.join(rootPath, options.server.gaeAppRoot);
     runServer = shell.task([cmd]);
   }
 
   gulp.task("actless:server", runServer);
   gulp.task("actless:server:open", runServerOpen);
-  gulp.task("actless:server:livereload", runServerLivereload);
-  gulp.task("actless:server:livereload:watch", watchServerLivereload);
 
   // generate asset file hash(JS/CSS) ============================
   /* calc checksum ======================================= */
@@ -642,10 +615,6 @@ actless.initTasks = function (gulp, rootPath) {
   if (options.server.type !== "none") {
     defaultTasks.push("actless:server", "actless:server:open");
     fullTasks.push("actless:server", "actless:server:open");
-  }
-  if (options.server.type === "node" && options.server.livereload) {
-    defaultTasks.push("actless:server:livereload", "actless:server:livereload:watch");
-    fullTasks.push("actless:server:livereload", "actless:server:livereload:watch");
   }
   const runDefault = gulp.parallel.apply(null, defaultTasks);
   const runDefaultFull = gulp.parallel.apply(null, fullTasks);
