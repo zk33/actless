@@ -142,6 +142,9 @@ var actless = {};
 actless.options = options;
 
 actless.initTasks = function (gulp, rootPath) {
+  // set NODE_ENV to "production"
+  process.env.NODE_ENV = process.env.NODE_ENV || 'development';
+
   // compile sass (+ autoprefixer) =======
 
   function runSass() {
@@ -251,19 +254,20 @@ actless.initTasks = function (gulp, rootPath) {
 
   // typescript ================================================
 
+  let tsProject = typescript.createProject(options.ts.options);
   function runTS(cb) {
     return gulp.src(options.ts.src)
-      .pipe(typescript(options.ts.options))
+      .pipe(tsProject())
       .on("error", function (err) {
         console.warn("Error : " + err.message + "\n" + err.stack);
         this.emit("end");
       })
-      .js
       .pipe(gulp.dest(options.ts.destDir));
   }
   gulp.task("actless:ts", runTS);
   function watchTS(cb) {
     gulp.watch(options.ts.src, gulp.series("actless:ts"));
+    cb();
   }
   gulp.task('actless:ts:watch', watchTS);
 
@@ -645,10 +649,18 @@ actless.initTasks = function (gulp, rootPath) {
   }
   const runDefault = gulp.parallel.apply(null, defaultTasks);
   const runDefaultFull = gulp.parallel.apply(null, fullTasks);
+  const runDev = (cb) => {
+    process.env.NODE_ENV = 'development';
+    options.js.skipMinify = true;
+    cb();
+  }
+  gulp.task("actless:developmentMode", runDev);
   gulp.task("actless:default", runDefault);
   gulp.task("actless:full", runDefaultFull);
+  gulp.task("actless:dev", gulp.series("actless:developmentMode", "actless:default"));
   gulp.task("default", runDefault);
   gulp.task("full", runDefaultFull);
+  gulp.task("dev", gulp.series("actless:developmentMode", "actless:default"));
 
   return gulp;
 };
