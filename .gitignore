@@ -5,4 +5,4 @@
 /assets
 /tmp_html
 .DS_Store
-.fontcustom-manifest.json
+/tsconfig.json
