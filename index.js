@@ -82,6 +82,7 @@ options.ts = {
   src: "assets/ts/**/*{ts,tsx}",
   destDir: options.js.srcDir,
   exclude: [],
+  configFile: "",
   options: {
     jsx: "react",
     target: "esnext",
@@ -267,7 +268,9 @@ actless.initTasks = function (gulp, rootPath) {
 
   // typescript ================================================
 
-  let tsProject = typescript.createProject(options.ts.options);
+  let tsProject = typescript.createProject(
+    options.ts.configFile ? options.ts.configFile : options.ts.options
+  );
   function runTS(cb) {
     return gulp
       .src(options.ts.src)

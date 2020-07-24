@@ -19,5 +19,6 @@ opt.js.entry = "assets/js/*.js";
 opt.js.watch = ["assets/js/**/*.js", "assets/js/**/*.jsx"];
 opt.ts.enabled = true;
 opt.ts.destDir = opt.js.srcDir;
+opt.ts.configFile = "tsconfig.json";
 
 actless.initTasks(gulp, __dirname);

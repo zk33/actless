@@ -33,7 +33,8 @@ var options = actless.options;
 //options.ts.src = "assets/ts/**/*{ts,tsx}";
 //options.ts.destDir = options.js.srcDir;
 //options.ts.exclude = [];
-//options.ts.options = { jsx: 'react', target: 'esnext', moduleResolution: 'node' }; // options for gulp-typescript(https://github.com/ivogabe/gulp-typescript)
+//options.ts.configFile = ""; //tsconfig.json
+//options.ts.options = { jsx: 'react', target: 'esnext', moduleResolution: 'node' }; // options for gulp-typescript(https://github.com/ivogabe/gulp-typescript) // deprecated
 
 // webpack options ============================
 //options.webpack.enabled = false;
