@@ -19,6 +19,7 @@ var options = actless.options;
 //options.sass.cssnano.enabled = true;
 
 // js compile options ========================
+//options.js.enabled = true;
 //options.js.srcDir = 'assets/js';
 //options.js.destDir = 'public/assets/js';
 //options.js.entry = 'assets/js/*.js';
@@ -33,6 +34,9 @@ var options = actless.options;
 //options.ts.destDir = options.js.srcDir;
 //options.ts.exclude = [];
 //options.ts.options = { jsx: 'react', target: 'esnext', moduleResolution: 'node' }; // options for gulp-typescript(https://github.com/ivogabe/gulp-typescript)
+
+// webpack options ============================
+//options.webpack.enabled = false;
 
 // icon font compile options ==================
 //options.icon.srcDir = 'assets/icons/';
@@ -59,7 +63,6 @@ var options = actless.options;
 //options.server.options.host = "localhost";
 //options.server.options.port = 3000;
 //options.server.options.fallback = "index.html";
-
 
 // HTML prettify options =================
 //options.prettify.enabled = true;

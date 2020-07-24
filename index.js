@@ -28,8 +28,13 @@ const iconfont = require("gulp-iconfont");
 const walkSync = require("walk-sync");
 const webserver = require("gulp-webserver");
 const typescript = require("gulp-typescript");
+const { option } = require("commander");
 
 var options = {};
+var hasBrowserList = fs.existsSync("./.browserlistrc");
+if (!hasBrowserList) {
+  console.warn("Make .browserlistrc file for babel/postcss etc.");
+}
 
 // sass compile options
 options.sass = {
@@ -40,51 +45,54 @@ options.sass = {
   postcssPresetEnv: {
     enabled: true,
     options: {
-      browsers: ["last 2 versions", "> 4%"],
-      stage: 1
-    }
+      stage: 1,
+    },
   },
   mqpacker: {
     enabled: true,
-    options: {}
+    options: {},
   },
   cssnano: {
     enabled: true,
-    options: {}
-  }
+    options: {},
+  },
 };
+if (!hasBrowserList) {
+  options.sass.postcssPresetEnv.options.browsers = [
+    "last 2 versions",
+    "> 4%",
+    "not dead",
+  ];
+}
 // js compile options
 options.js = {
+  enabled: true,
   srcDir: "assets/js",
   entry: "assets/js/*.js",
   watch: ["assets/js/**/*.js", "assets/js/**/*.jsx"],
   destDir: "public/assets/js",
   commonFileName: "common.js",
-  babelPresets: [
-    [
-      "@babel/preset-env",
-      {
-        targets: {
-          browsers: ["last 2 versions", "IE 11"]
-        }
-      }
-    ],
-    "@babel/preset-react"
-  ],
+  babelPresets: [["@babel/preset-env", {}], "@babel/preset-react"],
   exclude: [],
-  skipMinify: false
+  skipMinify: false,
 };
+// ts compile options
 options.ts = {
   enabled: false,
   src: "assets/ts/**/*{ts,tsx}",
   destDir: options.js.srcDir,
   exclude: [],
   options: {
-    jsx: 'react',
-    target: 'esnext',
-    moduleResolution: 'node'
-  }
+    jsx: "react",
+    target: "esnext",
+    moduleResolution: "node",
+  },
 };
+// webpack options
+options.webpack = {
+  enabled: false,
+};
+
 // icon font compile options
 options.icon = {
   srcDir: "assets/icons/",
@@ -92,7 +100,7 @@ options.icon = {
   sassDir: "",
   renameSrcFile: {
     from: "iconsのコピー_",
-    to: ""
+    to: "",
   },
   minifiedDir: "assets/icons_min/",
   fontName: "icon",
@@ -101,43 +109,43 @@ options.icon = {
   sassHashTemplate: __dirname + "/lib/templates/_iconhash.scss",
   sassFontPath: "../fonts/",
   className: "icon",
-  options: {}
+  options: {},
 };
 // wig(HTML builder) compile options
 options.wig = {
   publicDir: "public",
   dataDir: "data",
   tmplDir: "templates",
-  verbose: true
+  verbose: true,
 };
 // test server options
 options.server = {
   type: "node",
   rootDir: "public",
   gaeAppRoot: "app", // for app engine only
-  url: {},// for backward compatibility...
+  url: {}, // for backward compatibility...
   options: {
     path: "/",
     livereload: true,
     host: "localhost",
     port: 3000,
     fallback: undefined,
-    https: false
-  }
+    https: false,
+  },
 };
 // HTML prettify options
 options.prettify = {
   enabled: false,
   tmpDir: "tmp_html",
   options: {
-    indent_size: 2
-  }
+    indent_size: 2,
+  },
 };
 // generate assetHash for cache busterring
 options.assetHash = {
   enabled: true,
   destDir: "",
-  extraAssetDir: []
+  extraAssetDir: [],
 };
 
 var actless = {};
@@ -146,7 +154,7 @@ actless.options = options;
 
 actless.initTasks = function (gulp, rootPath) {
   // set NODE_ENV to "production"
-  process.env.NODE_ENV = process.env.NODE_ENV || 'production';
+  process.env.NODE_ENV = process.env.NODE_ENV || "production";
 
   // compile sass (+ autoprefixer) =======
 
@@ -157,7 +165,7 @@ actless.initTasks = function (gulp, rootPath) {
       .pipe(
         sass({
           includePaths: options.sass.includePaths,
-          outputStyle: options.sass.style
+          outputStyle: options.sass.style,
         }).on("error", sass.logError)
       );
     //postcss
@@ -176,7 +184,9 @@ actless.initTasks = function (gulp, rootPath) {
     if (processors.length) {
       g = g.pipe(postcss(processors));
     }
-    g = g.pipe(plumber.stop()).pipe(gulp.dest(path.join(rootPath, options.sass.destDir)));
+    g = g
+      .pipe(plumber.stop())
+      .pipe(gulp.dest(path.join(rootPath, options.sass.destDir)));
     return g;
   }
   gulp.task("actless:sass", runSass);
@@ -186,7 +196,7 @@ actless.initTasks = function (gulp, rootPath) {
       [
         path.join(rootPath, options.sass.srcDir) + "/**/*.scss",
         path.join(rootPath, options.sass.srcDir) + "/**/*.sass",
-        "!" + path.join(rootPath, options.sass.srcDir) + "/**/*.swp"
+        "!" + path.join(rootPath, options.sass.srcDir) + "/**/*.swp",
       ],
       gulp.series("actless:sass")
     );
@@ -199,10 +209,10 @@ actless.initTasks = function (gulp, rootPath) {
     ref：http://qiita.com/inuscript/items/b933af4d44a4712cb8f8
   */
   function runJs() {
-    var write = filepath => {
-      return concat(content => {
+    var write = (filepath) => {
+      return concat((content) => {
         var res = file(path.basename(filepath), content, {
-          src: true
+          src: true,
         });
         if (!options.js.skipMinify) {
           res.pipe(uglify());
@@ -212,15 +222,15 @@ actless.initTasks = function (gulp, rootPath) {
       });
     };
     var files = glob.sync(path.join(rootPath, options.js.entry), {
-      nodir: true
+      nodir: true,
     });
-    var outputFiles = files.map(fileName => {
+    var outputFiles = files.map((fileName) => {
       return write(fileName.replace(options.js.srcDir, options.js.destDir));
     });
 
     var b = browserify(files, {
       extensions: ["js", "jsx"],
-      debug: true
+      debug: true,
     });
     for (var i = 0, len = options.js.exclude.length; i < len; i++) {
       b = b.exclude(options.js.exclude[i]);
@@ -228,11 +238,11 @@ actless.initTasks = function (gulp, rootPath) {
     b = b
       .transform(
         babelify.configure({
-          presets: options.js.babelPresets
+          presets: options.js.babelPresets,
         })
       )
       .plugin(factor, {
-        output: outputFiles
+        output: outputFiles,
       })
       .bundle()
       .on("error", function (err) {
@@ -259,7 +269,8 @@ actless.initTasks = function (gulp, rootPath) {
 
   let tsProject = typescript.createProject(options.ts.options);
   function runTS(cb) {
-    return gulp.src(options.ts.src)
+    return gulp
+      .src(options.ts.src)
       .pipe(tsProject())
       .on("error", function (err) {
         console.warn("Error : " + err.message + "\n" + err.stack);
@@ -272,7 +283,14 @@ actless.initTasks = function (gulp, rootPath) {
     gulp.watch(options.ts.src, gulp.series("actless:ts"));
     cb();
   }
-  gulp.task('actless:ts:watch', watchTS);
+  gulp.task("actless:ts:watch", watchTS);
+
+  // webpack ===================================================
+
+  const runWebpack = shell.task(["npx webpack --mode production"]);
+  gulp.task("actless:webpack", runWebpack);
+  const watchWebpack = shell.task(["npx webpack --mode production -w"]);
+  gulp.task("actless:webpack:watch", watchWebpack);
 
   // bulid icon font ===========================================
 
@@ -282,7 +300,10 @@ actless.initTasks = function (gulp, rootPath) {
       .pipe(
         flatmap((stream, file) => {
           var filename = file.path.replace(file.base, "");
-          filename = filename.replace(options.icon.renameSrcFile.from, options.icon.renameSrcFile.to);
+          filename = filename.replace(
+            options.icon.renameSrcFile.from,
+            options.icon.renameSrcFile.to
+          );
           return stream.pipe(svgmin()).pipe(gulpconcat(filename));
         })
       )
@@ -295,21 +316,24 @@ actless.initTasks = function (gulp, rootPath) {
       .src(path.join(rootPath, options.icon.minifiedDir, "**", "*.svg"))
       .pipe(
         iconfont(
-          Object.assign({
-            fontName: options.icon.fontName,
-            className: options.icon.className,
-            formats: ["svg", "ttf", "eot", "woff"],
-            startUnicode: 0xf001,
-            fontHeight: 512,
-            descent: 64
-          },
+          Object.assign(
+            {
+              fontName: options.icon.fontName,
+              className: options.icon.className,
+              formats: ["svg", "ttf", "eot", "woff"],
+              startUnicode: 0xf001,
+              fontHeight: 512,
+              descent: 64,
+            },
             options.icon.options
           )
         )
       )
       .on("glyphs", (codepoints, opt) => {
-        var sassDir = options.icon.sassDir ? options.icon.sassDir : options.sass.srcDir;
-        codepoints.forEach(val => {
+        var sassDir = options.icon.sassDir
+          ? options.icon.sassDir
+          : options.sass.srcDir;
+        codepoints.forEach((val) => {
           val.codepoint = val.unicode[0]
             .charCodeAt(0)
             .toString(16)
@@ -323,7 +347,7 @@ actless.initTasks = function (gulp, rootPath) {
               fontName: options.icon.fontName,
               fontPath: options.icon.sassFontPath,
               className: options.icon.className,
-              varName: options.icon.iconSassName.substr(1)
+              varName: options.icon.iconSassName.substr(1),
             })
           )
           .pipe(gulpconcat(options.icon.iconSassName + ".scss"))
@@ -336,19 +360,27 @@ actless.initTasks = function (gulp, rootPath) {
   function runIconHash() {
     var data;
     try {
-      data = fs.readFileSync(path.join(rootPath, options.icon.destDir, options.icon.fontName + ".woff"));
+      data = fs.readFileSync(
+        path.join(
+          rootPath,
+          options.icon.destDir,
+          options.icon.fontName + ".woff"
+        )
+      );
     } catch (e) {
       console.log(e);
       return;
     }
     var hash = crypto.createHash("md5");
-    var sassDir = options.icon.sassDir ? options.icon.sassDir : options.sass.srcDir;
+    var sassDir = options.icon.sassDir
+      ? options.icon.sassDir
+      : options.sass.srcDir;
     hash.update(data);
     return gulp
       .src(options.icon.sassHashTemplate)
       .pipe(
         consolidate("nunjucks", {
-          hash: hash.digest("hex")
+          hash: hash.digest("hex"),
         })
       )
       .pipe(gulpconcat("_iconhash.scss"))
@@ -356,15 +388,30 @@ actless.initTasks = function (gulp, rootPath) {
   }
   gulp.task("actless:icons:hash", runIconHash);
 
-  const watchIcons = gulp.series(runSvgmin, compileIcons, runIconHash, function (cb) {
-    gulp.watch(path.join(rootPath, options.icon.srcDir, "**", "*.svg"), gulp.series("actless:icons:svgmin"));
-    gulp.watch(path.join(rootPath, options.icon.minifiedDir, "**", "*.svg"), gulp.series("actless:icons:compile"));
-    gulp.watch(
-      path.join(rootPath, options.icon.destDir, options.icon.fontName + ".woff"),
-      gulp.series("actless:icons:hash")
-    );
-    cb();
-  });
+  const watchIcons = gulp.series(
+    runSvgmin,
+    compileIcons,
+    runIconHash,
+    function (cb) {
+      gulp.watch(
+        path.join(rootPath, options.icon.srcDir, "**", "*.svg"),
+        gulp.series("actless:icons:svgmin")
+      );
+      gulp.watch(
+        path.join(rootPath, options.icon.minifiedDir, "**", "*.svg"),
+        gulp.series("actless:icons:compile")
+      );
+      gulp.watch(
+        path.join(
+          rootPath,
+          options.icon.destDir,
+          options.icon.fontName + ".woff"
+        ),
+        gulp.series("actless:icons:hash")
+      );
+      cb();
+    }
+  );
   gulp.task("actless:icons:watch", watchIcons);
 
   // wig ==========================
@@ -397,7 +444,7 @@ actless.initTasks = function (gulp, rootPath) {
     path.join(rootPath, wigOpt.dataDir, "**", "*"),
     path.join(rootPath, options.wig.tmplDir, "**", "*"),
     "!" + path.join(rootPath, wigOpt.dataDir, "**", "*.swp"),
-    "!" + path.join(rootPath, options.wig.tmplDir, "**", "*.swp")
+    "!" + path.join(rootPath, options.wig.tmplDir, "**", "*.swp"),
   ];
   const watchWig = function (cb) {
     gulp.watch(wigWatchSrc, gulp.series("actless:wig"));
@@ -410,9 +457,15 @@ actless.initTasks = function (gulp, rootPath) {
     var prettifySrc = [];
     var nonPrettifySrc = [];
 
-    prettifySrc.push(path.join(rootPath, options.prettify.tmpDir, "**", "*.html"));
-    nonPrettifySrc.push(path.join(rootPath, options.prettify.tmpDir, "**", "*"));
-    nonPrettifySrc.push("!" + path.join(rootPath, options.prettify.tmpDir, "**", "*.html"));
+    prettifySrc.push(
+      path.join(rootPath, options.prettify.tmpDir, "**", "*.html")
+    );
+    nonPrettifySrc.push(
+      path.join(rootPath, options.prettify.tmpDir, "**", "*")
+    );
+    nonPrettifySrc.push(
+      "!" + path.join(rootPath, options.prettify.tmpDir, "**", "*.html")
+    );
 
     function runPrettify() {
       return gulp
@@ -454,11 +507,12 @@ actless.initTasks = function (gulp, rootPath) {
     gulp.task("actless:prettify:watch", watchPrettify);
   }
 
-
   // test server ========================
 
-  options.server.options.port = options.server.url.port || options.server.options.port;
-  options.server.options.host = options.server.url.hostname || options.server.options.host;
+  options.server.options.port =
+    options.server.url.port || options.server.options.port;
+  options.server.options.host =
+    options.server.url.hostname || options.server.options.host;
 
   var runServer = function (cb) {
     console.log("actless:server not defined");
@@ -470,9 +524,9 @@ actless.initTasks = function (gulp, rootPath) {
   };
 
   if (options.server.type !== "none") {
-    var testUrl = options.server.options.https ? 'https://' : 'http://';
+    var testUrl = options.server.options.https ? "https://" : "http://";
     testUrl = testUrl + options.server.options.host;
-    testUrl = testUrl + ':' + options.server.options.port;
+    testUrl = testUrl + ":" + options.server.options.port;
     console.log(testUrl);
     runServerOpen = function (cb) {
       open(testUrl);
@@ -483,11 +537,10 @@ actless.initTasks = function (gulp, rootPath) {
   if (options.server.type === "node") {
     // test server(Nodejs)
     runServer = () => {
-      return gulp.src(options.server.rootDir)
+      return gulp
+        .src(options.server.rootDir)
         .pipe(webserver(options.server.options));
-    }
-
-
+    };
   } else if (options.server.type === "php") {
     // test server(PHP)
     var cmd =
@@ -510,7 +563,10 @@ actless.initTasks = function (gulp, rootPath) {
   } else if (options.server.type === "gae") {
     // test server(GAE)
     var cmd =
-      "dev_appserver.py --port=" + options.server.options.port + " " + path.join(rootPath, options.server.gaeAppRoot);
+      "dev_appserver.py --port=" +
+      options.server.options.port +
+      " " +
+      path.join(rootPath, options.server.gaeAppRoot);
     runServer = shell.task([cmd]);
   }
 
@@ -519,11 +575,16 @@ actless.initTasks = function (gulp, rootPath) {
 
   // generate asset file hash(JS/CSS) ============================
   /* calc checksum ======================================= */
-  var assetHashDestDir = options.assetHash.destDir ? options.assetHash.destDir : options.wig.dataDir;
-  var assetHashSrc = [path.join(rootPath, options.sass.destDir), path.join(rootPath, options.js.destDir)];
+  var assetHashDestDir = options.assetHash.destDir
+    ? options.assetHash.destDir
+    : options.wig.dataDir;
+  var assetHashSrc = [
+    path.join(rootPath, options.sass.destDir),
+    path.join(rootPath, options.js.destDir),
+  ];
   Array.prototype.push.apply(
     assetHashSrc,
-    options.assetHash.extraAssetDir.map(v => {
+    options.assetHash.extraAssetDir.map((v) => {
       return path.join(rootPath, v);
     })
   );
@@ -535,7 +596,7 @@ actless.initTasks = function (gulp, rootPath) {
       for (var i = 0, len = assetHashSrc.length; i < len; i++) {
         dir = assetHashSrc[i];
         files = walkSync(dir, {
-          directories: false
+          directories: false,
         });
         for (var k = 0, kLen = files.length; k < kLen; k++) {
           fName = files[k];
@@ -547,7 +608,10 @@ actless.initTasks = function (gulp, rootPath) {
           }
         }
       }
-      fs.writeFileSync(path.join(assetHashDestDir, "_assetHash.json"), JSON.stringify(res, null, 2));
+      fs.writeFileSync(
+        path.join(assetHashDestDir, "_assetHash.json"),
+        JSON.stringify(res, null, 2)
+      );
     }
     cb();
   }
@@ -555,11 +619,11 @@ actless.initTasks = function (gulp, rootPath) {
 
   var assetHashWatchSrc = [
     path.join(rootPath, options.sass.destDir, "**", "*.css"),
-    path.join(rootPath, options.js.destDir, "**", "*.js")
+    path.join(rootPath, options.js.destDir, "**", "*.js"),
   ];
   Array.prototype.push.apply(
     assetHashWatchSrc,
-    options.assetHash.extraAssetDir.map(v => {
+    options.assetHash.extraAssetDir.map((v) => {
       return path.join(rootPath, v, "**", "*");
     })
   );
@@ -570,32 +634,59 @@ actless.initTasks = function (gulp, rootPath) {
   });
   gulp.task("actless:assetHash:watch", watchAssetHash);
 
+  // define gulp tasks ===========================================
+
   // compile
-  const compileMainTasks = [gulp.parallel("actless:sass", "actless:js"), "actless:assetHash"];
+  const mainParaTasks = ["actless:sass"];
+  if (options.js.enabled) {
+    mainParaTasks.push("actless:js");
+  }
+  const compileMainTasks = [];
+  if (mainParaTasks.length) {
+    compileMainTasks.push(gulp.parallel.apply(null, mainParaTasks));
+  }
+  compileMainTasks.push("actless:assetHash");
   if (options.ts.enabled) {
     compileMainTasks.unshift("actless:ts");
   }
+  if (options.webpack.enabled) {
+    compileMainTasks.push("actless:webpack");
+  }
   const runCompile = gulp.parallel(
     gulp.series.apply(null, compileMainTasks),
-    (options.prettify.enabled ? gulp.series("actless:wig", gulp.parallel("actless:prettify", "actless:nonPrettify")) : "actless:wig")
+    options.prettify.enabled
+      ? gulp.series(
+          "actless:wig",
+          gulp.parallel("actless:prettify", "actless:nonPrettify")
+        )
+      : "actless:wig"
   );
   gulp.task("actless:compile", runCompile);
 
   // compile all
   const runCompileFull = gulp.parallel(
     "actless:compile",
-    gulp.series("actless:icons:svgmin", "actless:icons:compile", "actless:icons:hash")
+    gulp.series(
+      "actless:icons:svgmin",
+      "actless:icons:compile",
+      "actless:icons:hash"
+    )
   );
   gulp.task("actless:compile:full", runCompileFull);
 
   // watch
-  const watchTasks = ["actless:sass:watch",
-    "actless:js:watch",
-    "actless:assetHash:watch",
-    "actless:wig:watch"
-  ]
+  const watchTasks = ["actless:sass:watch"];
+  if (options.js.enabled) {
+    watchTasks.push("actless:js:watch");
+  }
+  watchTasks.push("actless:assetHash:watch");
+  watchTasks.push("actless:wig:watch");
+
   if (options.ts.enabled) {
-    watchTasks.push('actless:ts:watch');
+    watchTasks.push("actless:ts:watch");
+  }
+  if (options.webpack.enabled) {
+    watchTasks.push("actless:webpack:watch");
   }
   if (options.prettify.enabled) {
     watchTasks.push("actless:prettify:watch");
@@ -619,14 +710,17 @@ actless.initTasks = function (gulp, rootPath) {
   const runDefault = gulp.parallel.apply(null, defaultTasks);
   const runDefaultFull = gulp.parallel.apply(null, fullTasks);
   const runDev = (cb) => {
-    process.env.NODE_ENV = 'development';
+    process.env.NODE_ENV = "development";
     options.js.skipMinify = true;
     cb();
-  }
+  };
   gulp.task("actless:developmentMode", runDev);
   gulp.task("actless:default", runDefault);
   gulp.task("actless:full", runDefaultFull);
-  gulp.task("actless:dev", gulp.series("actless:developmentMode", "actless:default"));
+  gulp.task(
+    "actless:dev",
+    gulp.series("actless:developmentMode", "actless:default")
+  );
   gulp.task("default", runDefault);
   gulp.task("full", runDefaultFull);
   gulp.task("dev", gulp.series("actless:developmentMode", "actless:default"));

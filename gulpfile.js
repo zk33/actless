@@ -10,11 +10,13 @@ opt.prettify.enabled = true;
 opt.icon.useTmp = true;
 opt.icon.options.normalize = true;
 
+opt.js.enabled = false;
 opt.js.skipMinify = false;
+opt.webpack.enabled = true;
 
-opt.js.srcDir = 'assets/js2';
-opt.js.entry = "assets/js2/*.js";
-opt.js.watch = ["assets/js2/**/*.js", "assets/js2/**/*.jsx"];
+opt.js.srcDir = "assets/js";
+opt.js.entry = "assets/js/*.js";
+opt.js.watch = ["assets/js/**/*.js", "assets/js/**/*.jsx"];
 opt.ts.enabled = true;
 opt.ts.destDir = opt.js.srcDir;
 
