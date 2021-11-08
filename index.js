@@ -8,7 +8,7 @@ const crypto = require("crypto");
 const _ = require("lodash");
 const Wig = require("wig");
 const open = require("open");
-const sass = require("gulp-sass");
+const sass = require("gulp-sass")(require("sass"));
 const postcss = require("gulp-postcss");
 const plumber = require("gulp-plumber");
 const browserify = require("browserify");
@@ -40,7 +40,7 @@ if (!hasBrowserList) {
 options.sass = {
   srcDir: "assets/sass",
   destDir: "public/assets/css",
-  style: "compact",
+  outputStyle: "compact",
   includePaths: ["./node_modules/actless/sass", "./node_modules/sanitize.css"],
   postcssPresetEnv: {
     enabled: true,
@@ -433,7 +433,7 @@ actless.initTasks = function (gulp, rootPath) {
   function runWig(cb) {
     if (!builder) {
       builder = new Wig(wigOpt);
-      builder.addRendererFilter("date", require("nunjucks-date-filter"));
+      //builder.addRendererFilter("date", require("nunjucks-date-filter"));
     }
     try {
       builder.build();
