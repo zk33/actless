@@ -9,14 +9,18 @@ var options = actless.options;
 // you can modify defaul options
 // ==================================
 
-// sass compile options ======================
-//options.sass.destDir = 'public/assets/css';
-//options.sass.outputStyle = 'compact';
-//options.sass.postcssPresetEnv.enabled = true;
-//options.sass.postcssPresetEnv.options.browsers =  ["last 2 versions", "> 4%"];
-//options.sass.postcssPresetEnv.options.stage = 1 //4:stable >>> 0:unstable features
-//options.sass.mqpacker.enabled = true;
-//options.sass.cssnano.enabled = true;
+// css compile options ======================
+//options.css.srcDir = 'assets/css';
+//options.css.destDir = 'public/assets/css';
+//options.css.sass.outputStyle = 'compact';
+//options.css.sass.enabled = true;
+//options.css.postcssImport.enabled = true;
+//options.css.postcssImport.options = {};
+//options.css.postcssPresetEnv.enabled = true;
+//options.css.postcssPresetEnv.options.browsers =  ["last 2 versions", "> 4%"];
+//options.css.postcssPresetEnv.options.stage = 1 //4:stable >>> 0:unstable features
+//options.css.mqpacker.enabled = true;
+//options.css.cssnano.enabled = true;
 
 // js compile options ========================
 //options.js.enabled = true;
@@ -44,11 +48,11 @@ var options = actless.options;
 //options.icon.destDir = 'public/assets/fonts/';
 //options.icon.sassDir = '';
 //options.icon.fontName = 'icon';
-//options.icon.iconSassName = '_icon';
-//options.icon.sassTemplate = './node_modules/actless/lib/templates/_icon.scss';
-//options.icon.sassHashTemplate = './node_modules/actless/lib/templates/_iconhash.scss';
-//options.icon.sassFontPath = '../fonts/';
+//options.icon.iconCssName = '_icon';
+//options.icon.cssTemplate = './node_modules/actless/lib/templates/_icon.scss';
+//options.icon.cssFontPath = '../fonts/';
 //options.icon.className = 'icon';
+//options.icon.exportGlyphsAsProp = true;
 
 // wig(HTML builder) compile options ================
 //options.wig.publicDir = 'public';

@@ -3,12 +3,14 @@ var gulp = require("gulp");
 var actless = require("./index.js");
 
 var opt = actless.options;
-opt.sass.mqpacker.enabled = true;
-opt.sass.cssnano.enabled = true;
+opt.css.sass.enabled = false;
+opt.css.mqpacker.enabled = true;
+opt.css.cssnano.enabled = true;
 opt.wig.tmplDir = "tmpl";
 opt.prettify.enabled = true;
 opt.icon.useTmp = true;
 opt.icon.options.normalize = true;
+opt.icon.exportGlyphsAsProp = false;
 
 opt.js.enabled = false;
 opt.js.skipMinify = false;

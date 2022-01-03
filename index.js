@@ -1,7 +1,6 @@
 "use strict";
 
 const path = require("path");
-const url = require("url");
 const fs = require("fs");
 const crypto = require("crypto");
 
@@ -28,7 +27,6 @@ const iconfont = require("gulp-iconfont");
 const walkSync = require("walk-sync");
 const webserver = require("gulp-webserver");
 const typescript = require("gulp-typescript");
-const { option } = require("commander");
 
 var options = {};
 var hasBrowserList = fs.existsSync("./.browserlistrc");
@@ -36,12 +34,22 @@ if (!hasBrowserList) {
   console.warn("Make .browserlistrc file for babel/postcss etc.");
 }
 
-// sass compile options
-options.sass = {
-  srcDir: "assets/sass",
+// css compile options
+options.css = {
+  srcDir: "",
   destDir: "public/assets/css",
-  outputStyle: "compact",
-  includePaths: ["./node_modules/actless/sass", "./node_modules/sanitize.css"],
+  sass: {
+    enabled: true,
+    outputStyle: "compact",
+    includePaths: [
+      "./node_modules/actless/sass",
+      "./node_modules/sanitize.css",
+    ],
+  },
+  postcssImport: {
+    enabled: true,
+    options: {},
+  },
   postcssPresetEnv: {
     enabled: true,
     options: {
@@ -57,13 +65,7 @@ options.sass = {
     options: {},
   },
 };
-if (!hasBrowserList) {
-  options.sass.postcssPresetEnv.options.browsers = [
-    "last 2 versions",
-    "> 4%",
-    "not dead",
-  ];
-}
+options.sass = options.css; // for backward compatibility
 // js compile options
 options.js = {
   enabled: true,
@@ -105,11 +107,11 @@ options.icon = {
   },
   minifiedDir: "assets/icons_min/",
   fontName: "icon",
-  iconSassName: "_icon",
-  sassTemplate: __dirname + "/lib/templates/_icon.scss",
-  sassHashTemplate: __dirname + "/lib/templates/_iconhash.scss",
-  sassFontPath: "../fonts/",
+  iconCssName: "_icon",
+  cssTemplate: __dirname + "/lib/templates/_icon.scss",
+  cssFontPath: "../fonts/",
   className: "icon",
+  exportGlyphsAsProp: true,
   options: {},
 };
 // wig(HTML builder) compile options
@@ -157,53 +159,83 @@ actless.initTasks = function (gulp, rootPath) {
   // set NODE_ENV to "production"
   process.env.NODE_ENV = process.env.NODE_ENV || "production";
 
-  // compile sass (+ autoprefixer) =======
-
-  function runSass() {
+  // compile css  =======
+  if (!options.css.srcDir) {
+    if (options.css.sass.enabled) {
+      options.css.srcDir = "assets/sass";
+    } else {
+      options.css.srcDir = "assets/css";
+    }
+  }
+  if (!hasBrowserList) {
+    options.css.postcssPresetEnv.options.browsers = [
+      "last 2 versions",
+      "> 4%",
+      "not dead",
+    ];
+  }
+  function runCss() {
     var g = gulp
-      .src(path.join(rootPath, options.sass.srcDir, "**", "*"))
-      .pipe(plumber())
-      .pipe(
+      .src(path.join(rootPath, options.css.srcDir, "**", "!(_*)"))
+      .pipe(plumber());
+    if (options.css.sass.enabled) {
+      g = g.pipe(
         sass({
-          includePaths: options.sass.includePaths,
-          outputStyle: options.sass.style,
+          includePaths: options.css.includePaths,
+          outputStyle: options.css.style,
         }).on("error", sass.logError)
       );
-    //postcss
-    var processors = [];
-    if (options.sass.postcssPresetEnv.enabled) {
-      let opt = options.sass.postcssPresetEnv.options;
-      processors.push(require("postcss-preset-env")(opt));
     }
-    if (options.sass.mqpacker.enabled) {
-      processors.push(require("css-mqpacker")(options.sass.mqpacker.options));
+    //postcss(preprocess)
+    var preprocessors = [];
+    if (!options.css.sass.enabled && options.css.postcssImport.enabled) {
+      preprocessors.push(
+        require("postcss-import")(options.css.postcssImport.options)
+      );
     }
-    if (options.sass.cssnano.enabled) {
-      processors.push(require("cssnano")(options.sass.cssnano.options));
+    if (options.css.postcssPresetEnv.enabled) {
+      let opt = options.css.postcssPresetEnv.options;
+      preprocessors.push(require("postcss-preset-env")(opt));
+    }
+    if (preprocessors.length) {
+      g = g.pipe(postcss(preprocessors));
     }
 
-    if (processors.length) {
-      g = g.pipe(postcss(processors));
+    //postcss(postprocess)
+    var postprocessors = [];
+    if (options.css.mqpacker.enabled) {
+      postprocessors.push(
+        require("@hail2u/css-mqpacker")(options.css.mqpacker.options)
+      );
     }
+    if (options.css.cssnano.enabled) {
+      postprocessors.push(require("cssnano")(options.css.cssnano.options));
+    }
+    if (postprocessors.length) {
+      g = g.pipe(postcss(postprocessors));
+    }
+
     g = g
       .pipe(plumber.stop())
-      .pipe(gulp.dest(path.join(rootPath, options.sass.destDir)));
+      .pipe(gulp.dest(path.join(rootPath, options.css.destDir)));
     return g;
   }
-  gulp.task("actless:sass", runSass);
+  gulp.task("actless:css", runCss);
+  gulp.task("actless:sass", runCss); //for backward compatibility
 
-  function watchSass(cb) {
+  function watchCss(cb) {
     gulp.watch(
       [
-        path.join(rootPath, options.sass.srcDir) + "/**/*.scss",
-        path.join(rootPath, options.sass.srcDir) + "/**/*.sass",
-        "!" + path.join(rootPath, options.sass.srcDir) + "/**/*.swp",
+        path.join(rootPath, options.css.srcDir) + "/**/*",
+        path.join(rootPath, options.css.srcDir) + "/**/*",
+        "!" + path.join(rootPath, options.css.srcDir) + "/**/*.swp",
       ],
-      gulp.series("actless:sass")
+      gulp.series("actless:css")
     );
     cb();
   }
-  gulp.task("actless:sass:watch", watchSass);
+  gulp.task("actless:css:watch", watchCss);
+  gulp.task("actless:sass:watch", watchCss); //for backward compatibility
 
   /*
     build JS ========================================================
@@ -314,6 +346,7 @@ actless.initTasks = function (gulp, rootPath) {
   }
   gulp.task("actless:icons:svgmin", runSvgmin);
 
+  let currentCodepoints = null;
   function compileIcons() {
     return gulp
       .src(path.join(rootPath, options.icon.minifiedDir, "**", "*.svg"))
@@ -333,28 +366,7 @@ actless.initTasks = function (gulp, rootPath) {
         )
       )
       .on("glyphs", (codepoints, opt) => {
-        var sassDir = options.icon.sassDir
-          ? options.icon.sassDir
-          : options.sass.srcDir;
-        codepoints.forEach((val) => {
-          val.codepoint = val.unicode[0]
-            .charCodeAt(0)
-            .toString(16)
-            .toUpperCase();
-        });
-        gulp
-          .src(options.icon.sassTemplate)
-          .pipe(
-            consolidate("nunjucks", {
-              glyphs: codepoints,
-              fontName: options.icon.fontName,
-              fontPath: options.icon.sassFontPath,
-              className: options.icon.className,
-              varName: options.icon.iconSassName.substr(1),
-            })
-          )
-          .pipe(gulpconcat(options.icon.iconSassName + ".scss"))
-          .pipe(gulp.dest(path.join(rootPath, sassDir)));
+        currentCodepoints = codepoints;
       })
       .pipe(gulp.dest(path.join(rootPath, options.icon.destDir)));
   }
@@ -375,19 +387,34 @@ actless.initTasks = function (gulp, rootPath) {
       return;
     }
     var hash = crypto.createHash("md5");
-    var sassDir = options.icon.sassDir
+    var cssDir = options.icon.sassDir
       ? options.icon.sassDir
-      : options.sass.srcDir;
+      : options.css.srcDir;
     hash.update(data);
+    currentCodepoints.forEach((val) => {
+      val.codepoint = val.unicode[0].charCodeAt(0).toString(16).toUpperCase();
+    });
     return gulp
-      .src(options.icon.sassHashTemplate)
+      .src(options.icon.cssTemplate)
       .pipe(
         consolidate("nunjucks", {
           hash: hash.digest("hex"),
+          glyphs: currentCodepoints,
+          fontName: options.icon.fontName,
+          fontPath: options.icon.cssFontPath,
+          className: options.icon.className,
+          varName: options.icon.iconCssName.substr(1),
+          isSass: !!options.css.sass.enabled,
+          exportProp: !!options.icon.exportGlyphsAsProp,
         })
       )
-      .pipe(gulpconcat("_iconhash.scss"))
-      .pipe(gulp.dest(path.join(rootPath, sassDir)));
+      .pipe(
+        gulpconcat(
+          options.icon.iconCssName +
+            (options.css.sass.enabled ? ".scss" : ".css")
+        )
+      )
+      .pipe(gulp.dest(path.join(rootPath, cssDir)));
   }
   gulp.task("actless:icons:hash", runIconHash);
 
@@ -416,6 +443,14 @@ actless.initTasks = function (gulp, rootPath) {
     }
   );
   gulp.task("actless:icons:watch", watchIcons);
+  gulp.task(
+    "actless:icons:build",
+    gulp.series(
+      "actless:icons:svgmin",
+      "actless:icons:compile",
+      "actless:icons:hash"
+    )
+  );
 
   // wig ==========================
   var wigOpt = _.assign({}, options.wig);
@@ -582,7 +617,7 @@ actless.initTasks = function (gulp, rootPath) {
     ? options.assetHash.destDir
     : options.wig.dataDir;
   var assetHashSrc = [
-    path.join(rootPath, options.sass.destDir),
+    path.join(rootPath, options.css.destDir),
     path.join(rootPath, options.js.destDir),
   ];
   Array.prototype.push.apply(
@@ -621,7 +656,7 @@ actless.initTasks = function (gulp, rootPath) {
   gulp.task("actless:assetHash", runAssetHash);
 
   var assetHashWatchSrc = [
-    path.join(rootPath, options.sass.destDir, "**", "*.css"),
+    path.join(rootPath, options.css.destDir, "**", "*.css"),
     path.join(rootPath, options.js.destDir, "**", "*.js"),
   ];
   Array.prototype.push.apply(
@@ -640,7 +675,7 @@ actless.initTasks = function (gulp, rootPath) {
   // define gulp tasks ===========================================
 
   // compile
-  const mainParaTasks = ["actless:sass"];
+  const mainParaTasks = ["actless:css"];
   if (options.js.enabled) {
     mainParaTasks.push("actless:js");
   }
@@ -669,16 +704,12 @@ actless.initTasks = function (gulp, rootPath) {
   // compile all
   const runCompileFull = gulp.parallel(
     "actless:compile",
-    gulp.series(
-      "actless:icons:svgmin",
-      "actless:icons:compile",
-      "actless:icons:hash"
-    )
+    "actless:icons:build"
   );
   gulp.task("actless:compile:full", runCompileFull);
 
   // watch
-  const watchTasks = ["actless:sass:watch"];
+  const watchTasks = ["actless:css:watch"];
   if (options.js.enabled) {
     watchTasks.push("actless:js:watch");
   }
