@@ -1,6 +1,6 @@
 {
   "name": "actless",
-  "version": "9.0.0",
+  "version": "9.0.1",
   "description": "Static website generator/scaffolding tool based on wig",
   "main": "index.js",
   "scripts": {
@@ -24,7 +24,7 @@
     "url": "https://github.com/zk33/actless/issues"
   },
   "homepage": "https://github.com/zk33/actless#readme",
-  "devDependencies": {
+  "dependencies": {
     "@babel/core": "^7.16.7",
     "@babel/polyfill": "^7.10.4",
     "@babel/preset-env": "^7.16.7",
