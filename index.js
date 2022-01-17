@@ -40,7 +40,7 @@ options.css = {
   destDir: "public/assets/css",
   sass: {
     enabled: true,
-    outputStyle: "compact",
+    outputStyle: "expanded",
     includePaths: [
       "./node_modules/actless/sass",
       "./node_modules/sanitize.css",
