@@ -181,8 +181,8 @@ actless.initTasks = function (gulp, rootPath) {
     if (options.css.sass.enabled) {
       g = g.pipe(
         sass({
-          includePaths: options.css.includePaths,
-          outputStyle: options.css.style,
+          includePaths: options.css.sass.includePaths,
+          outputStyle: options.css.sass.outputStyle,
         }).on("error", sass.logError)
       );
     }
