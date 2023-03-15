@@ -6,15 +6,16 @@ var opt = actless.options;
 opt.css.sass.enabled = false;
 opt.css.mqpacker.enabled = true;
 opt.css.cssnano.enabled = true;
+opt.wig.enabled = true;
 opt.wig.tmplDir = "tmpl";
 opt.prettify.enabled = true;
 opt.icon.useTmp = true;
 opt.icon.options.normalize = true;
-opt.icon.exportGlyphsAsProp = false;
+opt.icon.exportGlyphsAsProp = true;
 
 opt.js.enabled = false;
 opt.js.skipMinify = false;
-opt.webpack.enabled = true;
+opt.webpack.enabled = false;
 
 opt.js.srcDir = "assets/js";
 opt.js.entry = "assets/js/*.js";

@@ -64,6 +64,10 @@ options.css = {
     enabled: true,
     options: {},
   },
+  stylelint: {
+    enabled: false,
+    options: {},
+  },
 };
 options.sass = options.css; // for backward compatibility
 // js compile options
@@ -116,6 +120,7 @@ options.icon = {
 };
 // wig(HTML builder) compile options
 options.wig = {
+  enabled: true,
   publicDir: "public",
   dataDir: "data",
   tmplDir: "templates",
@@ -189,6 +194,13 @@ actless.initTasks = function (gulp, rootPath) {
     //postcss(preprocess)
     var preprocessors = [];
     if (!options.css.sass.enabled && options.css.postcssImport.enabled) {
+      if (options.css.stylelint.enabled) {
+        options.css.postcssImport.options.plugins =
+          options.css.postcssImport.options.plugins || [];
+        options.css.postcssImport.options.plugins.push(
+          require("stylelint")(options.css.stylelint.options)
+        );
+      }
       preprocessors.push(
         require("postcss-import")(options.css.postcssImport.options)
       );
@@ -453,45 +465,48 @@ actless.initTasks = function (gulp, rootPath) {
   );
 
   // wig ==========================
-  var wigOpt = _.assign({}, options.wig);
-  wigOpt.rootDir = rootPath;
-  if (!_.isArray(wigOpt.tmplDir)) {
-    wigOpt.tmplDir = [wigOpt.tmplDir];
-  }
-  wigOpt.tmplDir.push(path.join(__dirname, "templates"));
-  // change output directory if prettify is enabled
-  if (options.prettify && options.prettify.enabled) {
-    wigOpt.outDir = options.prettify.tmpDir || "html_tmp";
-  }
-  var builder;
+  if (options.wig.enabled) {
+    var wigOpt = _.assign({}, options.wig);
+    wigOpt.rootDir = rootPath;
+    if (!_.isArray(wigOpt.tmplDir)) {
+      wigOpt.tmplDir = [wigOpt.tmplDir];
+    }
+    wigOpt.tmplDir.push(path.join(__dirname, "templates"));
+    // change output directory if prettify is enabled
+    if (options.prettify && options.prettify.enabled) {
+      wigOpt.outDir = options.prettify.tmpDir || "html_tmp";
+    }
+    var builder;
 
-  function runWig(cb) {
-    if (!builder) {
-      builder = new Wig(wigOpt);
-      //builder.addRendererFilter("date", require("nunjucks-date-filter"));
+    function runWig(cb) {
+      if (!builder) {
+        builder = new Wig(wigOpt);
+        //builder.addRendererFilter("date", require("nunjucks-date-filter"));
+      }
+      try {
+        builder.build();
+      } catch (e) {
+        console.log(e);
+      }
+      cb();
     }
-    try {
-      builder.build();
-    } catch (e) {
-      console.log(e);
-    }
-    cb();
+    gulp.task("actless:wig", runWig);
+    var wigWatchSrc = [
+      path.join(rootPath, wigOpt.dataDir, "**", "*"),
+      path.join(rootPath, options.wig.tmplDir, "**", "*"),
+      "!" + path.join(rootPath, wigOpt.dataDir, "**", "*.swp"),
+      "!" + path.join(rootPath, options.wig.tmplDir, "**", "*.swp"),
+    ];
+    const watchWig = function (cb) {
+      gulp.watch(wigWatchSrc, gulp.series("actless:wig"));
+      cb();
+    };
+    gulp.task("actless:wig:watch", watchWig);
   }
-  gulp.task("actless:wig", runWig);
-  var wigWatchSrc = [
-    path.join(rootPath, wigOpt.dataDir, "**", "*"),
-    path.join(rootPath, options.wig.tmplDir, "**", "*"),
-    "!" + path.join(rootPath, wigOpt.dataDir, "**", "*.swp"),
-    "!" + path.join(rootPath, options.wig.tmplDir, "**", "*.swp"),
-  ];
-  const watchWig = function (cb) {
-    gulp.watch(wigWatchSrc, gulp.series("actless:wig"));
-    cb();
-  };
-  gulp.task("actless:wig:watch", watchWig);
 
   // prettify =====================
-  if (options.prettify.enabled) {
+  // ※wigがdisabledの時=常にdisabled
+  if (options.wig.enabled && options.prettify.enabled) {
     var prettifySrc = [];
     var nonPrettifySrc = [];
 
@@ -690,15 +705,22 @@ actless.initTasks = function (gulp, rootPath) {
   if (options.webpack.enabled) {
     compileMainTasks.push("actless:webpack");
   }
-  const runCompile = gulp.parallel(
-    gulp.series.apply(null, compileMainTasks),
-    options.prettify.enabled
-      ? gulp.series(
-          "actless:wig",
-          gulp.parallel("actless:prettify", "actless:nonPrettify")
-        )
-      : "actless:wig"
-  );
+  const compileParaTasks = [gulp.series.apply(null, compileMainTasks)];
+  if (options.wig.enabled) {
+    compileParaTasks.push(
+      options.prettify.enabled
+        ? gulp.series(
+            "actless:wig",
+            gulp.parallel("actless:prettify", "actless:nonPrettify")
+          )
+        : "actless:wig"
+    );
+  }
+  const runCompile =
+    compileParaTasks.length === 1
+      ? compileParaTasks[0]
+      : gulp.parallel.apply(null, compileParaTasks);
+
   gulp.task("actless:compile", runCompile);
 
   // compile all
@@ -714,15 +736,16 @@ actless.initTasks = function (gulp, rootPath) {
     watchTasks.push("actless:js:watch");
   }
   watchTasks.push("actless:assetHash:watch");
-  watchTasks.push("actless:wig:watch");
-
+  if (options.wig.enabled) {
+    watchTasks.push("actless:wig:watch");
+  }
   if (options.ts.enabled) {
     watchTasks.push("actless:ts:watch");
   }
   if (options.webpack.enabled) {
     watchTasks.push("actless:webpack:watch");
   }
-  if (options.prettify.enabled) {
+  if (options.wig.enabled && options.prettify.enabled) {
     watchTasks.push("actless:prettify:watch");
   }
 

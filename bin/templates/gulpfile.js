@@ -55,6 +55,7 @@ var options = actless.options;
 //options.icon.exportGlyphsAsProp = true;
 
 // wig(HTML builder) compile options ================
+//options.wig.enabled = true;
 //options.wig.publicDir = 'public';
 //options.wig.dataDir = 'data';
 //options.wig.tmplDir = 'templates';
