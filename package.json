@@ -1,6 +1,6 @@
 {
   "name": "actless",
-  "version": "10.1.0",
+  "version": "10.1.1",
   "description": "Static website generator/scaffolding tool based on wig",
   "main": "index.js",
   "scripts": {
@@ -36,7 +36,7 @@
     "browserify": "^17.0.0",
     "commander": "^10.0.0",
     "concat-stream": "^2.0.0",
-    "cssnano": "^5.1.15",
+    "cssnano": "^6.0.1",
     "factor-bundle": "^2.5.0",
     "glob": "^9.3.0",
     "gulp": "^4.0.2",
@@ -60,7 +60,7 @@
     "nunjucks": "^3.2.3",
     "open": "^8.4.2",
     "postcss-import": "^15.1.0",
-    "postcss-preset-env": "^8.0.1",
+    "postcss-preset-env": "^8.4.2",
     "react": "^18.2.0",
     "sanitize.css": "^13.0.0",
     "sass": "^1.59.3",
